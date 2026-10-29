@@ -89,22 +89,22 @@ func (s *Service) Login(ctx context.Context, email, password string) (AuthRespon
 	}
 
 	now := time.Now().UTC()
-	accessToken, accessExp, err := s.tokens.GenerateAccessToken(u.ID, u.CompanyID, u.Role, u.MustChangePassword, now)
-	if err != nil {
-		return AuthResponse{}, err
-	}
-
 	rawRefresh, refreshHash, err := GenerateRefreshToken()
 	if err != nil {
 		return AuthResponse{}, err
 	}
 	refreshExp := now.Add(RefreshTokenTTL)
 
-	_, err = s.queries.CreateAuthSession(ctx, db.CreateAuthSessionParams{
+	sess, err := s.queries.CreateAuthSession(ctx, db.CreateAuthSessionParams{
 		UserID:           u.ID,
 		RefreshTokenHash: refreshHash,
 		ExpiresAt:        refreshExp,
 	})
+	if err != nil {
+		return AuthResponse{}, err
+	}
+
+	accessToken, accessExp, err := s.tokens.GenerateAccessToken(sess.ID, u.ID, u.CompanyID, u.Role, u.MustChangePassword, now)
 	if err != nil {
 		return AuthResponse{}, err
 	}
@@ -158,22 +158,22 @@ func (s *Service) Refresh(ctx context.Context, rawRefreshToken string) (AuthResp
 	}
 
 	now := time.Now().UTC()
-	accessToken, accessExp, err := s.tokens.GenerateAccessToken(u.ID, u.CompanyID, u.Role, u.MustChangePassword, now)
-	if err != nil {
-		return AuthResponse{}, err
-	}
-
 	newRawRefresh, newRefreshHash, err := GenerateRefreshToken()
 	if err != nil {
 		return AuthResponse{}, err
 	}
 	refreshExp := now.Add(RefreshTokenTTL)
 
-	_, err = qtx.CreateAuthSession(ctx, db.CreateAuthSessionParams{
+	newSess, err := qtx.CreateAuthSession(ctx, db.CreateAuthSessionParams{
 		UserID:           u.ID,
 		RefreshTokenHash: newRefreshHash,
 		ExpiresAt:        refreshExp,
 	})
+	if err != nil {
+		return AuthResponse{}, err
+	}
+
+	accessToken, accessExp, err := s.tokens.GenerateAccessToken(newSess.ID, u.ID, u.CompanyID, u.Role, u.MustChangePassword, now)
 	if err != nil {
 		return AuthResponse{}, err
 	}
@@ -191,13 +191,23 @@ func (s *Service) Refresh(ctx context.Context, rawRefreshToken string) (AuthResp
 	}, nil
 }
 
-func (s *Service) Logout(ctx context.Context, rawRefreshToken string) error {
+func (s *Service) Logout(ctx context.Context, rawRefreshToken string, sessionID pgtype.UUID) error {
 	trimmed := strings.TrimSpace(rawRefreshToken)
-	if trimmed == "" {
+	if trimmed == "" && !sessionID.Valid {
 		return ErrInvalidRefreshToken
 	}
-	tokenHash := HashRefreshToken(trimmed)
-	return s.queries.RevokeAuthSessionByTokenHash(ctx, tokenHash)
+	if trimmed != "" {
+		tokenHash := HashRefreshToken(trimmed)
+		if err := s.queries.RevokeAuthSessionByTokenHash(ctx, tokenHash); err != nil {
+			return err
+		}
+	}
+	if sessionID.Valid {
+		if err := s.queries.RevokeAuthSessionByID(ctx, sessionID); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *Service) ChangePassword(ctx context.Context, userID pgtype.UUID, currentPassword, newPassword string) (AuthResponse, error) {
@@ -253,22 +263,22 @@ func (s *Service) ChangePassword(ctx context.Context, userID pgtype.UUID, curren
 	}
 
 	now := time.Now().UTC()
-	accessToken, accessExp, err := s.tokens.GenerateAccessToken(updated.ID, updated.CompanyID, updated.Role, updated.MustChangePassword, now)
-	if err != nil {
-		return AuthResponse{}, err
-	}
-
 	rawRefresh, refreshHash, err := GenerateRefreshToken()
 	if err != nil {
 		return AuthResponse{}, err
 	}
 	refreshExp := now.Add(RefreshTokenTTL)
 
-	_, err = qtx.CreateAuthSession(ctx, db.CreateAuthSessionParams{
+	newSess, err := qtx.CreateAuthSession(ctx, db.CreateAuthSessionParams{
 		UserID:           updated.ID,
 		RefreshTokenHash: refreshHash,
 		ExpiresAt:        refreshExp,
 	})
+	if err != nil {
+		return AuthResponse{}, err
+	}
+
+	accessToken, accessExp, err := s.tokens.GenerateAccessToken(newSess.ID, updated.ID, updated.CompanyID, updated.Role, updated.MustChangePassword, now)
 	if err != nil {
 		return AuthResponse{}, err
 	}

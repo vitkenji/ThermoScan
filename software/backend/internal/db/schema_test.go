@@ -159,3 +159,110 @@ func TestSchemaTablesAndQueries(t *testing.T) {
 		t.Fatalf("expected error fetching revoked session, got nil")
 	}
 }
+
+	// 3. Verify anomaly_events & cleaning_operations retry constraints (up to 3 actuated attempts, refusals do not consume attempts)
+	var moduleID, inspectionID, measurementID, anomalyID pgtype.UUID
+	err = tx.QueryRow(ctx, `
+		INSERT INTO modules (company_id, installer_technician_id, name, mac_address)
+		VALUES ($1, $2, 'Mod-01', 'AA:BB:CC:DD:EE:01')
+		RETURNING id
+	`, company.ID, tech.ID).Scan(&moduleID)
+	if err != nil {
+		t.Fatalf("insert module failed: %v", err)
+	}
+
+	err = tx.QueryRow(ctx, `
+		INSERT INTO inspections (module_id, type, scheduled_for, started_at, status)
+		VALUES ($1, 'scheduled', now(), now(), 'in_progress')
+		RETURNING id
+	`, moduleID).Scan(&inspectionID)
+	if err != nil {
+		t.Fatalf("insert inspection failed: %v", err)
+	}
+
+	err = tx.QueryRow(ctx, `
+		INSERT INTO measurements (
+			module_id, inspection_id, source_event_id, measured_at,
+			x_position_cm, baseline_temperature_c, max_temperature_c,
+			hotspot_detected, hotspot_confirmed, voltage_v, current_a, power_w, thermal_frame
+		) VALUES (
+			$1, $2, gen_random_uuid(), now(),
+			10.0, 35.0, 50.0,
+			true, true, 20.0, 4.0, 80.0, '[[35.0]]'::jsonb
+		) RETURNING id
+	`, moduleID, inspectionID).Scan(&measurementID)
+	if err != nil {
+		t.Fatalf("insert measurement failed: %v", err)
+	}
+
+	err = tx.QueryRow(ctx, `
+		INSERT INTO anomaly_events (
+			module_id, origin_measurement_id, source_event_id, x_position_cm,
+			detected_at, status, actuated_attempts_count, retry_pending, retry_reason
+		) VALUES (
+			$1, $2, gen_random_uuid(), 10.0,
+			now(), 'open', 0, true, 'insufficient_water'
+		) RETURNING id
+	`, moduleID, measurementID).Scan(&anomalyID)
+	if err != nil {
+		t.Fatalf("insert anomaly_event failed: %v", err)
+	}
+
+	// Refusal before pump actuation (does not consume attempt_number 1..3)
+	_, err = tx.Exec(ctx, `
+		INSERT INTO cleaning_operations (
+			module_id, anomaly_event_id, source_event_id, target_x_position_cm,
+			pump_actuated, attempt_number, status, failure_reason
+		) VALUES (
+			$1, $2, gen_random_uuid(), 10.0,
+			false, NULL, 'refused', 'insufficient_water'
+		)
+	`, moduleID, anomalyID)
+	if err != nil {
+		t.Fatalf("insert refused cleaning_operation failed: %v", err)
+	}
+
+	// Actuated attempts 1, 2 (interrupted/failed), and 3 (completed) on the same anomaly_event_id succeed
+	for attempt := 1; attempt <= 2; attempt++ {
+		_, err = tx.Exec(ctx, `
+			INSERT INTO cleaning_operations (
+				module_id, anomaly_event_id, source_event_id, target_x_position_cm,
+				pump_actuated, attempt_number, started_at, ended_at, status, failure_reason
+			) VALUES (
+				$1, $2, gen_random_uuid(), 10.0,
+				true, $3, now(), now(), 'failed', 'insufficient_water'
+			)
+		`, moduleID, anomalyID, attempt)
+		if err != nil {
+			t.Fatalf("insert actuated attempt %d failed: %v", attempt, err)
+		}
+	}
+
+	_, err = tx.Exec(ctx, `
+		INSERT INTO cleaning_operations (
+			module_id, anomaly_event_id, source_event_id, target_x_position_cm,
+			pump_actuated, attempt_number, started_at, ended_at, status
+		) VALUES (
+			$1, $2, gen_random_uuid(), 10.0,
+			true, 3, now(), now(), 'completed'
+		)
+	`, moduleID, anomalyID)
+	if err != nil {
+		t.Fatalf("insert actuated attempt 3 failed: %v", err)
+	}
+
+	// 4th attempt must be rejected by CHECK (attempt_number BETWEEN 1 AND 3)
+	_, _ = tx.Exec(ctx, "SAVEPOINT before_4th_attempt")
+	_, err = tx.Exec(ctx, `
+		INSERT INTO cleaning_operations (
+			module_id, anomaly_event_id, source_event_id, target_x_position_cm,
+			pump_actuated, attempt_number, started_at, ended_at, status
+		) VALUES (
+			$1, $2, gen_random_uuid(), 10.0,
+			true, 4, now(), now(), 'completed'
+		)
+	`, moduleID, anomalyID)
+	if err == nil {
+		t.Fatalf("expected error on 4th actuated attempt, got nil")
+	}
+	_, _ = tx.Exec(ctx, "ROLLBACK TO SAVEPOINT before_4th_attempt")

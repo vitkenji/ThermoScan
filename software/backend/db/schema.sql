@@ -215,6 +215,9 @@ CREATE TABLE anomaly_events (
     x_position_cm numeric(12,3) NOT NULL CHECK (x_position_cm >= 0),
     detected_at timestamptz NOT NULL,
     status text NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'unresolved')),
+    actuated_attempts_count integer NOT NULL DEFAULT 0 CHECK (actuated_attempts_count BETWEEN 0 AND 3),
+    retry_pending boolean NOT NULL DEFAULT false,
+    retry_reason text CHECK (retry_reason IS NULL OR btrim(retry_reason) <> ''),
     closed_at timestamptz,
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now(),
@@ -223,23 +226,27 @@ CREATE TABLE anomaly_events (
     FOREIGN KEY (module_id, origin_measurement_id) REFERENCES measurements(module_id, id) ON DELETE RESTRICT,
     CHECK ((status = 'open' AND closed_at IS NULL)
         OR (status IN ('resolved', 'unresolved') AND closed_at IS NOT NULL)),
-    CHECK (closed_at IS NULL OR closed_at >= detected_at)
+    CHECK (closed_at IS NULL OR closed_at >= detected_at),
+    CHECK (NOT retry_pending OR (status = 'open' AND actuated_attempts_count < 3)),
+    CHECK (retry_pending OR retry_reason IS NULL)
 );
 CREATE INDEX anomaly_events_module_time_idx ON anomaly_events(module_id, detected_at DESC);
 
 CREATE TABLE cleaning_operations (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     module_id uuid NOT NULL,
-    anomaly_event_id uuid NOT NULL UNIQUE,
+    anomaly_event_id uuid NOT NULL,
     source_event_id uuid NOT NULL,
     target_x_position_cm numeric(12,3) NOT NULL CHECK (target_x_position_cm >= 0),
+    pump_actuated boolean NOT NULL DEFAULT false,
+    attempt_number integer CHECK (attempt_number BETWEEN 1 AND 3),
     started_at timestamptz,
     ended_at timestamptz,
     duration_seconds numeric(10,3) CHECK (duration_seconds >= 0),
     estimated_water_volume_ml numeric(12,3) CHECK (estimated_water_volume_ml >= 0),
     status text NOT NULL DEFAULT 'scheduled'
         CHECK (status IN ('scheduled', 'in_progress', 'completed', 'refused', 'failed')),
-    failure_reason text,
+    failure_reason text CHECK (failure_reason IS NULL OR btrim(failure_reason) <> ''),
     post_cleaning_result text NOT NULL DEFAULT 'pending'
         CHECK (post_cleaning_result IN ('pending', 'resolved', 'unresolved')),
     created_at timestamptz NOT NULL DEFAULT now(),
@@ -247,9 +254,21 @@ CREATE TABLE cleaning_operations (
     UNIQUE (module_id, id),
     UNIQUE (module_id, source_event_id),
     FOREIGN KEY (module_id, anomaly_event_id) REFERENCES anomaly_events(module_id, id) ON DELETE RESTRICT,
-    CHECK (ended_at IS NULL OR (started_at IS NOT NULL AND ended_at >= started_at))
+    CHECK (ended_at IS NULL OR (started_at IS NOT NULL AND ended_at >= started_at)),
+    CHECK ((pump_actuated AND attempt_number IS NOT NULL AND started_at IS NOT NULL AND status IN ('in_progress', 'completed', 'failed'))
+        OR (NOT pump_actuated AND attempt_number IS NULL AND status IN ('scheduled', 'refused', 'failed'))),
+    CHECK (status <> 'refused' OR (NOT pump_actuated AND started_at IS NULL AND ended_at IS NULL AND failure_reason IS NOT NULL)),
+    CHECK (status <> 'completed' OR (pump_actuated AND ended_at IS NOT NULL)),
+    CHECK (status NOT IN ('refused', 'failed') OR failure_reason IS NOT NULL)
 );
 CREATE INDEX cleaning_operations_module_time_idx ON cleaning_operations(module_id, created_at DESC);
+CREATE INDEX cleaning_operations_anomaly_time_idx ON cleaning_operations(anomaly_event_id, created_at ASC);
+CREATE UNIQUE INDEX cleaning_operations_anomaly_attempt_idx
+    ON cleaning_operations(anomaly_event_id, attempt_number)
+    WHERE attempt_number IS NOT NULL;
+CREATE UNIQUE INDEX cleaning_operations_one_active_per_anomaly_idx
+    ON cleaning_operations(anomaly_event_id)
+    WHERE status IN ('scheduled', 'in_progress');
 
 ALTER TABLE inspections ADD CONSTRAINT inspections_cleaning_same_module_fk
     FOREIGN KEY (module_id, cleaning_operation_id)

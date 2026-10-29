@@ -12,16 +12,19 @@ import (
 )
 
 type AnomalyEvent struct {
-	ID                  pgtype.UUID
-	ModuleID            pgtype.UUID
-	OriginMeasurementID pgtype.UUID
-	SourceEventID       pgtype.UUID
-	XPositionCm         pgtype.Numeric
-	DetectedAt          time.Time
-	Status              string
-	ClosedAt            *time.Time
-	CreatedAt           time.Time
-	UpdatedAt           time.Time
+	ID                    pgtype.UUID
+	ModuleID              pgtype.UUID
+	OriginMeasurementID   pgtype.UUID
+	SourceEventID         pgtype.UUID
+	XPositionCm           pgtype.Numeric
+	DetectedAt            time.Time
+	Status                string
+	ActuatedAttemptsCount int32
+	RetryPending          bool
+	RetryReason           pgtype.Text
+	ClosedAt              *time.Time
+	CreatedAt             time.Time
+	UpdatedAt             time.Time
 }
 
 type AuthSession struct {
@@ -40,6 +43,8 @@ type CleaningOperation struct {
 	AnomalyEventID         pgtype.UUID
 	SourceEventID          pgtype.UUID
 	TargetXPositionCm      pgtype.Numeric
+	PumpActuated           bool
+	AttemptNumber          pgtype.Int4
 	StartedAt              *time.Time
 	EndedAt                *time.Time
 	DurationSeconds        pgtype.Numeric

@@ -46,9 +46,9 @@ func NewTokenManager(secret string) *TokenManager {
 	return &TokenManager{secret: []byte(secret)}
 }
 
-func (tm *TokenManager) GenerateAccessToken(userID pgtype.UUID, companyID pgtype.UUID, role string, mustChangePassword bool, now time.Time) (string, time.Time, error) {
-	if !userID.Valid {
-		return "", time.Time{}, errors.New("invalid user ID")
+func (tm *TokenManager) GenerateAccessToken(sessionID pgtype.UUID, userID pgtype.UUID, companyID pgtype.UUID, role string, mustChangePassword bool, now time.Time) (string, time.Time, error) {
+	if !sessionID.Valid || !userID.Valid {
+		return "", time.Time{}, errors.New("invalid session or user ID")
 	}
 
 	expiresAt := now.UTC().Add(AccessTokenTTL)
@@ -56,6 +56,7 @@ func (tm *TokenManager) GenerateAccessToken(userID pgtype.UUID, companyID pgtype
 		Role:               role,
 		MustChangePassword: mustChangePassword,
 		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        FormatUUID(sessionID),
 			Subject:   FormatUUID(userID),
 			IssuedAt:  jwt.NewNumericDate(now.UTC()),
 			ExpiresAt: jwt.NewNumericDate(expiresAt),
@@ -73,7 +74,7 @@ func (tm *TokenManager) GenerateAccessToken(userID pgtype.UUID, companyID pgtype
 	return signed, expiresAt, nil
 }
 
-func (tm *TokenManager) ParseAccessToken(tokenStr string) (*AccessTokenClaims, pgtype.UUID, error) {
+func (tm *TokenManager) ParseAccessToken(tokenStr string) (*AccessTokenClaims, pgtype.UUID, pgtype.UUID, error) {
 	claims := &AccessTokenClaims{}
 	parsed, err := jwt.ParseWithClaims(tokenStr, claims, func(t *jwt.Token) (any, error) {
 		if t.Method.Alg() != jwt.SigningMethodHS256.Alg() {
@@ -82,15 +83,20 @@ func (tm *TokenManager) ParseAccessToken(tokenStr string) (*AccessTokenClaims, p
 		return tm.secret, nil
 	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 	if err != nil || !parsed.Valid {
-		return nil, pgtype.UUID{}, errors.New("invalid or expired access token")
+		return nil, pgtype.UUID{}, pgtype.UUID{}, errors.New("invalid or expired access token")
 	}
 
 	userUUID, err := ParseUUID(claims.Subject)
 	if err != nil {
-		return nil, pgtype.UUID{}, errors.New("invalid subject in access token")
+		return nil, pgtype.UUID{}, pgtype.UUID{}, errors.New("invalid subject in access token")
 	}
 
-	return claims, userUUID, nil
+	sessionUUID, err := ParseUUID(claims.ID)
+	if err != nil {
+		return nil, pgtype.UUID{}, pgtype.UUID{}, errors.New("invalid session ID in access token")
+	}
+
+	return claims, userUUID, sessionUUID, nil
 }
 
 func GenerateRefreshToken() (rawToken string, tokenHash string, err error) {

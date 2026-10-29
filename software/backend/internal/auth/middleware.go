@@ -64,15 +64,18 @@ func Authenticate(queries *db.Queries, tokens *TokenManager) func(http.Handler) 
 				return
 			}
 
-			_, userID, err := tokens.ParseAccessToken(strings.TrimSpace(tokenStr))
+			_, userID, sessionID, err := tokens.ParseAccessToken(strings.TrimSpace(tokenStr))
 			if err != nil {
 				httpjson.WriteError(w, http.StatusUnauthorized, "invalid or expired access token", "UNAUTHORIZED")
 				return
 			}
 
-			u, err := queries.GetUserByID(r.Context(), userID)
+			u, err := queries.GetActiveAuthSessionWithUserByID(r.Context(), db.GetActiveAuthSessionWithUserByIDParams{
+				ID:     sessionID,
+				UserID: userID,
+			})
 			if err != nil || !u.IsActive || !u.CompanyIsActive {
-				httpjson.WriteError(w, http.StatusUnauthorized, "account is inactive or unauthorized", "UNAUTHORIZED")
+				httpjson.WriteError(w, http.StatusUnauthorized, "session is revoked, expired, or account is inactive", "UNAUTHORIZED")
 				return
 			}
 

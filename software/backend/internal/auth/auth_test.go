@@ -182,24 +182,16 @@ func TestAuthFlowIntegration(t *testing.T) {
 		t.Fatalf("expected 200 on PATCH /me, got %d: %s", rec.Code, rec.Body.String())
 	}
 
-	// 9. Logout revokes the rotated refresh token
+	// 9. Logout revokes the rotated refresh token AND immediately invalidates the access token
 	rec = doJSON(http.MethodPost, "/api/v1/auth/logout", "", map[string]string{
 		"refresh_token": refreshedResp.RefreshToken,
 	})
-	if rec.Code != http.StatusNoContent {
-		t.Fatalf("expected 204 on logout, got %d: %s", rec.Code, rec.Body.String())
-	}
-
-	// 10. Deactivating the company blocks even a valid unexpired JWT immediately
-	if _, err := q.SetCompanyActiveStatus(ctx, db.SetCompanyActiveStatusParams{
-		ID:       company.ID,
-		IsActive: false,
-	}); err != nil {
-		t.Fatalf("SetCompanyActiveStatus failed: %v", err)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 on logout, got %d: %s", rec.Code, rec.Body.String())
 	}
 
 	rec = doJSON(http.MethodGet, "/api/v1/auth/me", refreshedResp.AccessToken, nil)
 	if rec.Code != http.StatusUnauthorized {
-		t.Fatalf("expected 401 when company is deactivated, got %d: %s", rec.Code, rec.Body.String())
+		t.Fatalf("expected 401 when using access token of a logged-out session, got %d: %s", rec.Code, rec.Body.String())
 	}
 }

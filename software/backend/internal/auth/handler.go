@@ -3,11 +3,13 @@ package auth
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"backend/internal/db"
 	"backend/internal/httpjson"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Handler struct {
@@ -101,21 +103,34 @@ type logoutRequest struct {
 
 func (h *Handler) handleLogout(w http.ResponseWriter, r *http.Request) {
 	var req logoutRequest
-	if err := httpjson.DecodeJSON(r, &req); err != nil {
-		httpjson.WriteError(w, http.StatusBadRequest, "invalid request payload", "INVALID_PAYLOAD")
-		return
+	if r.ContentLength != 0 {
+		if err := httpjson.DecodeJSON(r, &req); err != nil {
+			httpjson.WriteError(w, http.StatusBadRequest, "invalid request payload", "INVALID_PAYLOAD")
+			return
+		}
 	}
 
-	if err := h.service.Logout(r.Context(), req.RefreshToken); err != nil {
+	var sessionID pgtype.UUID
+	if authHeader := strings.TrimSpace(r.Header.Get("Authorization")); authHeader != "" {
+		if scheme, tokenStr, ok := strings.Cut(authHeader, " "); ok && strings.EqualFold(scheme, "Bearer") {
+			if _, _, sid, err := h.tokens.ParseAccessToken(strings.TrimSpace(tokenStr)); err == nil {
+				sessionID = sid
+			}
+		}
+	}
+
+	if err := h.service.Logout(r.Context(), req.RefreshToken, sessionID); err != nil {
 		if errors.Is(err, ErrInvalidRefreshToken) {
-			httpjson.WriteError(w, http.StatusBadRequest, "refresh_token is required", "INVALID_PAYLOAD")
+			httpjson.WriteError(w, http.StatusBadRequest, "refresh_token or Bearer token is required", "INVALID_PAYLOAD")
 			return
 		}
 		httpjson.WriteError(w, http.StatusInternalServerError, "internal server error", "INTERNAL_ERROR")
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	httpjson.WriteJSON(w, http.StatusOK, map[string]string{
+		"message": "logged out successfully",
+	})
 }
 
 func (h *Handler) handleGetMe(w http.ResponseWriter, r *http.Request) {
