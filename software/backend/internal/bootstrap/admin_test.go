@@ -17,7 +17,7 @@ func testDBURL() string {
 	if url := os.Getenv("DATABASE_URL"); url != "" {
 		return url
 	}
-	return "postgres://termoscan:termoscan@localhost:5432/termoscan?sslmode=disable"
+	return "postgres://thermoscan:thermoscan@localhost:5432/thermoscan?sslmode=disable"
 }
 
 func TestEnsureSystemAdmin(t *testing.T) {
@@ -48,22 +48,22 @@ func TestEnsureSystemAdmin(t *testing.T) {
 	}
 
 	// 1. First call should create the system_admin and return a one-time temporary password
-	res1, err := bootstrap.EnsureSystemAdmin(ctx, q, "System Admin", "ADMIN@TERMOSCAN.LOCAL", nil)
+	res1, err := bootstrap.EnsureSystemAdmin(ctx, q, "System Admin", "ADMIN@THERMOSCAN.LOCAL", nil)
 	if err != nil {
 		t.Fatalf("first EnsureSystemAdmin failed: %v", err)
 	}
 	if !res1.Created {
 		t.Fatalf("expected Created=true on first bootstrap")
 	}
-	if res1.Email != "admin@termoscan.local" {
-		t.Fatalf("expected normalized email 'admin@termoscan.local', got %q", res1.Email)
+	if res1.Email != "admin@thermoscan.local" {
+		t.Fatalf("expected normalized email 'admin@thermoscan.local', got %q", res1.Email)
 	}
 	if len(res1.TemporaryPassword) < 16 {
 		t.Fatalf("expected non-empty random temporary password, got %q", res1.TemporaryPassword)
 	}
 
 	// Verify stored user in DB has bcrypt hash and must_change_password = true
-	u, err := q.GetUserByEmail(ctx, "admin@termoscan.local")
+	u, err := q.GetUserByEmail(ctx, "admin@thermoscan.local")
 	if err != nil {
 		t.Fatalf("GetUserByEmail failed: %v", err)
 	}
@@ -75,7 +75,7 @@ func TestEnsureSystemAdmin(t *testing.T) {
 	}
 
 	// 2. Second call should be a no-op (Created=false, TemporaryPassword="")
-	res2, err := bootstrap.EnsureSystemAdmin(ctx, q, "System Admin", "admin@termoscan.local", nil)
+	res2, err := bootstrap.EnsureSystemAdmin(ctx, q, "System Admin", "admin@thermoscan.local", nil)
 	if err != nil {
 		t.Fatalf("second EnsureSystemAdmin failed: %v", err)
 	}

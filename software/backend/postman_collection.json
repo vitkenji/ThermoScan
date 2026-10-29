@@ -97,7 +97,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@termoscan.local\",\n  \"password\": \"WgoBec3f_olzFj8NysbFug\"\n}"
+              "raw": "{\n  \"email\": \"admin@thermoscan.local\",\n  \"password\": \"K1vDltGknnHQnWVmt03-dQ\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/auth/login",
@@ -143,7 +143,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"current_password\": \"WgoBec3f_olzFj8NysbFug\",\n  \"new_password\": \"AdminForte#2026\"\n}"
+              "raw": "{\n  \"current_password\": \"K1vDltGknnHQnWVmt03-dQ\",\n  \"new_password\": \"AdminForte#2026\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/auth/change-password",
@@ -196,7 +196,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"System Admin Atualizado\",\n  \"email\": \"admin@termoscan.local\"\n}"
+              "raw": "{\n  \"name\": \"System Admin Atualizado\",\n  \"email\": \"admin@thermoscan.local\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/auth/me",

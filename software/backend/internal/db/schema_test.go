@@ -16,7 +16,7 @@ func testDBURL() string {
 	if url := os.Getenv("DATABASE_URL"); url != "" {
 		return url
 	}
-	return "postgres://termoscan:termoscan@localhost:5432/termoscan?sslmode=disable"
+	return "postgres://thermoscan:thermoscan@localhost:5432/thermoscan?sslmode=disable"
 }
 
 func TestSchemaTablesAndQueries(t *testing.T) {
@@ -158,7 +158,6 @@ func TestSchemaTablesAndQueries(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error fetching revoked session, got nil")
 	}
-}
 
 	// 3. Verify anomaly_events & cleaning_operations retry constraints (up to 3 actuated attempts, refusals do not consume attempts)
 	var moduleID, inspectionID, measurementID, anomalyID pgtype.UUID
@@ -266,3 +265,4 @@ func TestSchemaTablesAndQueries(t *testing.T) {
 		t.Fatalf("expected error on 4th actuated attempt, got nil")
 	}
 	_, _ = tx.Exec(ctx, "ROLLBACK TO SAVEPOINT before_4th_attempt")
+}

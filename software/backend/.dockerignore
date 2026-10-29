@@ -1,0 +1,4 @@
+**/*_test.go
+**/*.md
+postman_collection.json
+.env

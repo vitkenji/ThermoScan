@@ -22,7 +22,7 @@ func testDBURL() string {
 	if url := os.Getenv("DATABASE_URL"); url != "" {
 		return url
 	}
-	return "postgres://termoscan:termoscan@localhost:5432/termoscan?sslmode=disable"
+	return "postgres://thermoscan:thermoscan@localhost:5432/thermoscan?sslmode=disable"
 }
 
 func TestAuthFlowIntegration(t *testing.T) {

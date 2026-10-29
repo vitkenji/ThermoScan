@@ -1,6 +1,6 @@
-# TermoScan
+# ThermoScan
 
-TermoScan is a system for monitoring photovoltaic panels and detecting thermal hotspots. It uses a thermal sensor to scan the panel, measures electrical data, and aims to clean affected areas automatically with a targeted water jet.
+ThermoScan is a system for monitoring photovoltaic panels and detecting thermal hotspots. It uses a thermal sensor to scan the panel, measures electrical data, and aims to clean affected areas automatically with a targeted water jet.
 
 A mobile app lets users view measurements and monitor the system. The embedded device sends data to cloud services for storage and access through the app.
 

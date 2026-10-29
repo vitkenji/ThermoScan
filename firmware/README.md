@@ -1,6 +1,6 @@
-# TermoScan Firmware
+# ThermoScan Firmware
 
-Firmware for the TermoScan embedded device, based on the ESP32. It reads thermal and electrical data from a photovoltaic panel, detects potential hotspots, controls the scanning and cleaning mechanisms, and sends measurements to the cloud via Wi-Fi.
+Firmware for the ThermoScan embedded device, based on the ESP32. It reads thermal and electrical data from a photovoltaic panel, detects potential hotspots, controls the scanning and cleaning mechanisms, and sends measurements to the cloud via Wi-Fi.
 
 ## Main responsibilities
 

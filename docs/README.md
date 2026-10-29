@@ -1,6 +1,6 @@
-# TermoScan Documentation
+# ThermoScan Documentation
 
-This directory contains the technical documentation for the TermoScan project. It helps the team keep requirements, design decisions, and communication between system components in one place.
+This directory contains the technical documentation for the ThermoScan project. It helps the team keep requirements, design decisions, and communication between system components in one place.
 
 ## Suggested structure
 

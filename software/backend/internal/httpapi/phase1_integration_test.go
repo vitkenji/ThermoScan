@@ -24,7 +24,7 @@ func testDBURL() string {
 	if url := os.Getenv("DATABASE_URL"); url != "" {
 		return url
 	}
-	return "postgres://termoscan:termoscan@localhost:5432/termoscan?sslmode=disable"
+	return "postgres://thermoscan:thermoscan@localhost:5432/thermoscan?sslmode=disable"
 }
 
 func TestCompaniesAndUsersIntegration(t *testing.T) {
@@ -55,7 +55,7 @@ func TestCompaniesAndUsersIntegration(t *testing.T) {
 	_, err = q.CreateUser(ctx, db.CreateUserParams{
 		CompanyID:          pgtype.UUID{Valid: false},
 		Name:               "Test System Admin",
-		Email:              "sysadmin.test@termoscan.local",
+		Email:              "sysadmin.test@thermoscan.local",
 		PasswordHash:       adminHash,
 		Role:               auth.RoleSystemAdmin,
 		IsActive:           true,
@@ -119,7 +119,7 @@ func TestCompaniesAndUsersIntegration(t *testing.T) {
 	}
 
 	// 1. Login as system_admin
-	adminAuth := loginAndUnlock("sysadmin.test@termoscan.local", adminPass, adminPass)
+	adminAuth := loginAndUnlock("sysadmin.test@thermoscan.local", adminPass, adminPass)
 
 	// 2. System Admin creates Company A + Default Manager A
 	rec := doJSON(http.MethodPost, "/api/v1/companies", adminAuth.AccessToken, map[string]any{

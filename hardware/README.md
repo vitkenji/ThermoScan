@@ -1,6 +1,6 @@
-# TermoScan Hardware
+# ThermoScan Hardware
 
-This directory contains the hardware design files for the TermoScan system. The device scans photovoltaic panels to collect thermal and electrical measurements and supports localized cleaning when a hotspot is detected.
+This directory contains the hardware design files for the ThermoScan system. The device scans photovoltaic panels to collect thermal and electrical measurements and supports localized cleaning when a hotspot is detected.
 
 ## Main components
 
