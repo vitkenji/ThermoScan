@@ -17,6 +17,7 @@ import (
 	"backend/internal/config"
 	"backend/internal/db"
 	"backend/internal/httpapi"
+	"backend/internal/module"
 	"backend/internal/user"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -80,11 +81,15 @@ func main() {
 	userService := user.NewService(pool)
 	userHandler := user.NewHandler(userService, queries, tokens)
 
+	moduleService := module.NewService(pool)
+	moduleHandler := module.NewHandler(moduleService, queries, tokens)
+
 	router := httpapi.NewRouter(httpapi.Dependencies{
 		Pinger:         pool,
 		AuthHandler:    authHandler,
 		CompanyHandler: companyHandler,
 		UserHandler:    userHandler,
+		ModuleHandler:  moduleHandler,
 	})
 
 	srv := &http.Server{

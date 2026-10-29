@@ -1,0 +1,396 @@
+package httpapi_test
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+
+	"backend/internal/auth"
+	"backend/internal/company"
+	"backend/internal/db"
+	"backend/internal/httpapi"
+	"backend/internal/module"
+	"backend/internal/user"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
+func TestModulePermissionsAndLifecycleIntegration(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	conn, err := pgx.Connect(ctx, testDBURL())
+	if err != nil {
+		t.Skipf("PostgreSQL not reachable for integration test: %v", err)
+	}
+	defer conn.Close(ctx)
+
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		t.Fatalf("failed to begin tx: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	q := db.New(tx)
+	tokens := auth.NewTokenManager("module-integration-secret-key-2026")
+
+	adminPass := "AdminPass#2026"
+	adminHash, err := auth.HashPassword(adminPass)
+	if err != nil {
+		t.Fatalf("HashPassword: %v", err)
+	}
+	adminEmail := "sysadmin.modtest@thermoscan.local"
+	if _, err := q.CreateUser(ctx, db.CreateUserParams{
+		CompanyID:          pgtype.UUID{Valid: false},
+		Name:               "System Admin",
+		Email:              adminEmail,
+		PasswordHash:       adminHash,
+		Role:               auth.RoleSystemAdmin,
+		IsActive:           true,
+		IsDefaultManager:   false,
+		MustChangePassword: false,
+	}); err != nil {
+		t.Fatalf("CreateUser (system_admin): %v", err)
+	}
+
+	router := httpapi.NewRouter(httpapi.Dependencies{
+		AuthHandler:    auth.NewHandler(auth.NewService(tx, tokens), q, tokens),
+		CompanyHandler: company.NewHandler(company.NewService(tx), q, tokens),
+		UserHandler:    user.NewHandler(user.NewService(tx), q, tokens),
+		ModuleHandler:  module.NewHandler(module.NewService(tx), q, tokens),
+	})
+
+	doJSON := func(method, path, bearer string, body any) *httptest.ResponseRecorder {
+		var buf bytes.Buffer
+		if body != nil {
+			if err := json.NewEncoder(&buf).Encode(body); err != nil {
+				t.Fatalf("encode body: %v", err)
+			}
+		}
+		req := httptest.NewRequest(method, path, &buf)
+		req.Header.Set("Content-Type", "application/json")
+		if bearer != "" {
+			req.Header.Set("Authorization", "Bearer "+bearer)
+		}
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+		return rec
+	}
+
+	loginAndActivate := func(email, tempPass, newPass string) auth.AuthResponse {
+		rec := doJSON(http.MethodPost, "/api/v1/auth/login", "", map[string]string{
+			"email":    email,
+			"password": tempPass,
+		})
+		if rec.Code != http.StatusOK {
+			t.Fatalf("login(%s) failed (%d): %s", email, rec.Code, rec.Body.String())
+		}
+		var resp auth.AuthResponse
+		if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+			t.Fatalf("decode login: %v", err)
+		}
+		if resp.User.MustChangePassword {
+			rec = doJSON(http.MethodPost, "/api/v1/auth/change-password", resp.AccessToken, map[string]string{
+				"current_password": tempPass,
+				"new_password":     newPass,
+			})
+			if rec.Code != http.StatusOK {
+				t.Fatalf("change-password(%s) failed (%d): %s", email, rec.Code, rec.Body.String())
+			}
+			if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+				t.Fatalf("decode change-password: %v", err)
+			}
+		}
+		return resp
+	}
+
+	// 1. Login as System Admin and create Company A & Company B
+	adminAuth := loginAndActivate(adminEmail, adminPass, adminPass)
+
+	rec := doJSON(http.MethodPost, "/api/v1/companies", adminAuth.AccessToken, map[string]string{
+		"name":          "Company A Solar",
+		"manager_name":  "Manager A1",
+		"manager_email": "mgr.a1@modtest.local",
+	})
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("create Company A failed (%d): %s", rec.Code, rec.Body.String())
+	}
+	var compA company.CreateCompanyResult
+	_ = json.Unmarshal(rec.Body.Bytes(), &compA)
+
+	rec = doJSON(http.MethodPost, "/api/v1/companies", adminAuth.AccessToken, map[string]string{
+		"name":          "Company B Solar",
+		"manager_name":  "Manager B1",
+		"manager_email": "mgr.b1@modtest.local",
+	})
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("create Company B failed (%d): %s", rec.Code, rec.Body.String())
+	}
+	var compB company.CreateCompanyResult
+	_ = json.Unmarshal(rec.Body.Bytes(), &compB)
+
+	mgrAAuth := loginAndActivate("mgr.a1@modtest.local", compA.TemporaryPassword, "MgrA1#Pass2026")
+	mgrBAuth := loginAndActivate("mgr.b1@modtest.local", compB.TemporaryPassword, "MgrB1#Pass2026")
+
+	// System Admin is forbidden from accessing /api/v1/modules
+	rec = doJSON(http.MethodGet, "/api/v1/modules", adminAuth.AccessToken, nil)
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("expected 403 for System Admin on GET /modules, got %d", rec.Code)
+	}
+
+	// 2. Manager A1 creates Manager A2, Technician T1 (installer), Technician T2 (shared), and Client C1
+	rec = doJSON(http.MethodPost, "/api/v1/users", mgrAAuth.AccessToken, map[string]any{
+		"name":  "Manager A2",
+		"email": "mgr.a2@modtest.local",
+		"role":  "manager",
+	})
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("create Manager A2 failed: %s", rec.Body.String())
+	}
+	var mgrA2Res user.CreateUserResult
+	_ = json.Unmarshal(rec.Body.Bytes(), &mgrA2Res)
+
+	rec = doJSON(http.MethodPost, "/api/v1/users", mgrAAuth.AccessToken, map[string]any{
+		"name":        "Tech T1 Installer",
+		"email":       "tech.t1@modtest.local",
+		"role":        "technician",
+		"manager_ids": []string{compA.DefaultManager.ID},
+	})
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("create Tech T1 failed: %s", rec.Body.String())
+	}
+	var tech1Res user.CreateUserResult
+	_ = json.Unmarshal(rec.Body.Bytes(), &tech1Res)
+
+	rec = doJSON(http.MethodPost, "/api/v1/users", mgrAAuth.AccessToken, map[string]any{
+		"name":        "Tech T2 Shared",
+		"email":       "tech.t2@modtest.local",
+		"role":        "technician",
+		"manager_ids": []string{compA.DefaultManager.ID},
+	})
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("create Tech T2 failed: %s", rec.Body.String())
+	}
+	var tech2Res user.CreateUserResult
+	_ = json.Unmarshal(rec.Body.Bytes(), &tech2Res)
+
+	rec = doJSON(http.MethodPost, "/api/v1/users", mgrAAuth.AccessToken, map[string]any{
+		"name":  "Client C1",
+		"email": "client.c1@modtest.local",
+		"role":  "client",
+	})
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("create Client C1 failed: %s", rec.Body.String())
+	}
+	var client1Res user.CreateUserResult
+	_ = json.Unmarshal(rec.Body.Bytes(), &client1Res)
+
+	tech1Auth := loginAndActivate("tech.t1@modtest.local", tech1Res.TemporaryPassword, "TechT1#Pass2026")
+	tech2Auth := loginAndActivate("tech.t2@modtest.local", tech2Res.TemporaryPassword, "TechT2#Pass2026")
+	client1Auth := loginAndActivate("client.c1@modtest.local", client1Res.TemporaryPassword, "ClientC1#Pass2026")
+
+	// 3. Tech T1 lists all active company managers (both Manager A1 and Manager A2 should be returned)
+	rec = doJSON(http.MethodGet, "/api/v1/modules/company-managers", tech1Auth.AccessToken, nil)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 on GET /modules/company-managers, got %d: %s", rec.Code, rec.Body.String())
+	}
+	var mgrListResp struct {
+		Managers []module.ModuleManagerDTO `json:"managers"`
+	}
+	_ = json.Unmarshal(rec.Body.Bytes(), &mgrListResp)
+	if len(mgrListResp.Managers) != 2 {
+		t.Fatalf("expected 2 active company managers, got %d", len(mgrListResp.Managers))
+	}
+
+	// 4. Manager cannot create a module (only Technician can)
+	rec = doJSON(http.MethodPost, "/api/v1/modules", mgrAAuth.AccessToken, map[string]any{
+		"name":        "Forbidden Module",
+		"mac_address": "AA:BB:CC:DD:EE:01",
+		"manager_ids": []string{compA.DefaultManager.ID},
+	})
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("expected 403 when Manager creates module, got %d", rec.Code)
+	}
+
+	// 5. Tech T1 creates a draft module (pending_configuration) selecting Manager A2 (not even T1's direct manager, but active in company)
+	rec = doJSON(http.MethodPost, "/api/v1/modules", tech1Auth.AccessToken, map[string]any{
+		"name":        "PV-001 Roof Array",
+		"mac_address": "aa:bb:cc:dd:ee:01",
+		"manager_ids": []string{mgrA2Res.User.ID},
+	})
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("expected 201 when Tech T1 creates draft module, got %d: %s", rec.Code, rec.Body.String())
+	}
+	var modCreated module.ModuleDetailsDTO
+	_ = json.Unmarshal(rec.Body.Bytes(), &modCreated)
+	if modCreated.Module.MonitoringStatus != module.StatusPendingConfiguration {
+		t.Fatalf("expected status pending_configuration, got %s", modCreated.Module.MonitoringStatus)
+	}
+	if modCreated.Module.UserRelationship != module.RelInstallerTechnician {
+		t.Fatalf("expected relationship installer_technician, got %s", modCreated.Module.UserRelationship)
+	}
+
+	// Duplicate MAC is rejected with 409
+	rec = doJSON(http.MethodPost, "/api/v1/modules", tech1Auth.AccessToken, map[string]any{
+		"name":        "Duplicate MAC Module",
+		"mac_address": "AA:BB:CC:DD:EE:01",
+		"manager_ids": []string{compA.DefaultManager.ID},
+	})
+	if rec.Code != http.StatusConflict {
+		t.Fatalf("expected 409 on duplicate MAC, got %d", rec.Code)
+	}
+
+	// 6. Tech T1 completes module configuration -> transitions to active
+	rec = doJSON(http.MethodPatch, "/api/v1/modules/"+modCreated.Module.ID+"/configuration", tech1Auth.AccessToken, map[string]any{
+		"panel_length_cm":          195.5,
+		"panel_width_cm":           99.2,
+		"panel_count":              8,
+		"panel_spacing_cm":         2.5,
+		"latitude":                 -25.4395,
+		"longitude":                -49.2687,
+		"elevation_m":              934.0,
+		"azimuth_deg":              12.5,
+		"tilt_deg":                 23.0,
+		"azimuth_source":           "sensor",
+		"tilt_source":              "manual",
+		"minimum_solar_angle_deg":  15.0,
+		"inspection_interval_days": 7,
+	})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 on completing configuration, got %d: %s", rec.Code, rec.Body.String())
+	}
+	var modCompleted module.ModuleDetailsDTO
+	_ = json.Unmarshal(rec.Body.Bytes(), &modCompleted)
+	if modCompleted.Module.MonitoringStatus != module.StatusActive {
+		t.Fatalf("expected status active after full config, got %s", modCompleted.Module.MonitoringStatus)
+	}
+	if modCompleted.Module.ConfiguredAt == nil {
+		t.Fatalf("expected configured_at to be set")
+	}
+
+	// 7. Tech T2 (unshared) and Client C1 (unassigned) cannot view the module
+	rec = doJSON(http.MethodGet, "/api/v1/modules/"+modCreated.Module.ID, tech2Auth.AccessToken, nil)
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("expected 404 for unshared Tech T2, got %d", rec.Code)
+	}
+	rec = doJSON(http.MethodGet, "/api/v1/modules/"+modCreated.Module.ID, client1Auth.AccessToken, nil)
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("expected 404 for unassigned Client C1, got %d", rec.Code)
+	}
+
+	// 8. Manager A1 grants Tech T2 shared access -> Tech T2 can edit solar angle, but NOT interval or geometry
+	rec = doJSON(http.MethodPut, "/api/v1/modules/"+modCreated.Module.ID+"/technicians/"+tech2Res.User.ID, mgrAAuth.AccessToken, map[string]any{
+		"can_view": true,
+	})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 granting Tech T2 access, got %d: %s", rec.Code, rec.Body.String())
+	}
+
+	rec = doJSON(http.MethodPatch, "/api/v1/modules/"+modCreated.Module.ID+"/configuration", tech2Auth.AccessToken, map[string]any{
+		"minimum_solar_angle_deg": 20.0,
+	})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 when shared Tech T2 edits minimum_solar_angle_deg, got %d: %s", rec.Code, rec.Body.String())
+	}
+
+	rec = doJSON(http.MethodPatch, "/api/v1/modules/"+modCreated.Module.ID+"/configuration", tech2Auth.AccessToken, map[string]any{
+		"inspection_interval_days": 15,
+	})
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("expected 403 when shared Tech T2 tries to edit inspection_interval_days, got %d", rec.Code)
+	}
+
+	// 9. Manager A1 assigns Client C1 -> Client C1 can edit inspection_interval_days and toggle email preferences, but NOT solar angle
+	rec = doJSON(http.MethodPut, "/api/v1/modules/"+modCreated.Module.ID+"/clients", mgrAAuth.AccessToken, map[string]any{
+		"client_ids": []string{client1Res.User.ID},
+	})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 assigning Client C1, got %d: %s", rec.Code, rec.Body.String())
+	}
+
+	rec = doJSON(http.MethodPatch, "/api/v1/modules/"+modCreated.Module.ID+"/configuration", client1Auth.AccessToken, map[string]any{
+		"inspection_interval_days": 15,
+	})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 when assigned Client C1 edits inspection_interval_days, got %d: %s", rec.Code, rec.Body.String())
+	}
+
+	rec = doJSON(http.MethodPatch, "/api/v1/modules/"+modCreated.Module.ID+"/configuration", client1Auth.AccessToken, map[string]any{
+		"minimum_solar_angle_deg": 25.0,
+	})
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("expected 403 when Client C1 tries to edit minimum_solar_angle_deg, got %d", rec.Code)
+	}
+
+	rec = doJSON(http.MethodPatch, "/api/v1/modules/"+modCreated.Module.ID+"/email-preferences", client1Auth.AccessToken, map[string]any{
+		"operational_email_enabled": false,
+	})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 when Client C1 updates email preference, got %d: %s", rec.Code, rec.Body.String())
+	}
+
+	// Verify interval change logs contain both changes (1 -> 7 by Tech T1, and 7 -> 15 by Client C1)
+	rec = doJSON(http.MethodGet, "/api/v1/modules/"+modCreated.Module.ID+"/interval-logs", client1Auth.AccessToken, nil)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 on GET /interval-logs, got %d: %s", rec.Code, rec.Body.String())
+	}
+	var logsResp struct {
+		Logs []module.IntervalChangeLogDTO `json:"logs"`
+	}
+	_ = json.Unmarshal(rec.Body.Bytes(), &logsResp)
+	if len(logsResp.Logs) != 2 {
+		t.Fatalf("expected 2 interval change logs, got %d", len(logsResp.Logs))
+	}
+
+	// 10. Manager A1 revokes installer Tech T1's access -> Tech T1 immediately loses view and edit access
+	rec = doJSON(http.MethodPut, "/api/v1/modules/"+modCreated.Module.ID+"/technicians/"+tech1Res.User.ID, mgrAAuth.AccessToken, map[string]any{
+		"can_view": false,
+	})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 revoking installer Tech T1 access, got %d", rec.Code)
+	}
+
+	rec = doJSON(http.MethodGet, "/api/v1/modules/"+modCreated.Module.ID, tech1Auth.AccessToken, nil)
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("expected 404 for revoked installer Tech T1 on GET, got %d", rec.Code)
+	}
+	rec = doJSON(http.MethodPatch, "/api/v1/modules/"+modCreated.Module.ID+"/configuration", tech1Auth.AccessToken, map[string]any{
+		"panel_count": 10,
+	})
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("expected 404 for revoked installer Tech T1 on PATCH, got %d", rec.Code)
+	}
+
+	// Re-granting installer Tech T1 access restores installer editing privileges
+	rec = doJSON(http.MethodPut, "/api/v1/modules/"+modCreated.Module.ID+"/technicians/"+tech1Res.User.ID, mgrAAuth.AccessToken, map[string]any{
+		"can_view": true,
+	})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 re-granting installer Tech T1 access, got %d", rec.Code)
+	}
+	rec = doJSON(http.MethodPatch, "/api/v1/modules/"+modCreated.Module.ID+"/configuration", tech1Auth.AccessToken, map[string]any{
+		"panel_count": 10,
+	})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 when re-granted installer Tech T1 edits panel_count, got %d: %s", rec.Code, rec.Body.String())
+	}
+
+	// 11. Manager cannot remove all responsible managers (minimum 1 required)
+	rec = doJSON(http.MethodPut, "/api/v1/modules/"+modCreated.Module.ID+"/managers", mgrAAuth.AccessToken, map[string]any{
+		"manager_ids": []string{},
+	})
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 when setting empty manager_ids, got %d", rec.Code)
+	}
+
+	// 12. Cross-company isolation: Company B Manager cannot access Company A module
+	rec = doJSON(http.MethodGet, "/api/v1/modules/"+modCreated.Module.ID, mgrBAuth.AccessToken, nil)
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("expected 404 when Company B Manager requests Company A module, got %d", rec.Code)
+	}
+}

@@ -8,6 +8,7 @@ import (
 	"backend/internal/auth"
 	"backend/internal/company"
 	"backend/internal/httpjson"
+	"backend/internal/module"
 	"backend/internal/user"
 
 	"github.com/go-chi/chi/v5"
@@ -23,6 +24,7 @@ type Dependencies struct {
 	AuthHandler    *auth.Handler
 	CompanyHandler *company.Handler
 	UserHandler    *user.Handler
+	ModuleHandler  *module.Handler
 }
 
 func NewRouter(deps Dependencies) http.Handler {
@@ -63,6 +65,9 @@ func NewRouter(deps Dependencies) http.Handler {
 		}
 		if deps.UserHandler != nil {
 			deps.UserHandler.RegisterRoutes(r)
+		}
+		if deps.ModuleHandler != nil {
+			deps.ModuleHandler.RegisterRoutes(r)
 		}
 	})
 
