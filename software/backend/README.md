@@ -53,13 +53,13 @@ ThermoScan enforces strict company-based data isolation and role-based access co
 
 ## Implemented API Endpoints
 
-All endpoints are prefixed with `/api/v1` (except `/healthz`).
+All endpoints are prefixed with `/api/v1` (except `/health`).
 
 ### Health
 
 | Method | Path | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/healthz` | Public | Liveness and database connectivity check |
+| `GET` | `/health` (or `/api/v1/health`) | Public | Liveness and database connectivity check |
 
 ### Authentication & Profile
 
