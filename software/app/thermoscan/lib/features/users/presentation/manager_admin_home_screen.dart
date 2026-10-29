@@ -5,6 +5,7 @@ import 'package:thermoscan/core/theme/app_colors.dart';
 import 'package:thermoscan/core/theme/app_typography.dart';
 import 'package:thermoscan/core/widgets/top_app_bar.dart';
 import 'package:thermoscan/features/auth/presentation/auth_controller.dart';
+import 'package:thermoscan/features/modules/presentation/modules_controller.dart';
 import 'package:thermoscan/features/users/presentation/users_controller.dart';
 
 /// SCR-24: Administration Home (Manager)
@@ -15,8 +16,10 @@ class ManagerAdminHomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authControllerProvider).user;
     final usersAsync = ref.watch(companyUsersProvider);
+    final modulesAsync = ref.watch(modulesListProvider);
 
     final users = usersAsync.valueOrNull ?? const [];
+    final modules = modulesAsync.valueOrNull ?? const [];
     final managersCount = users.where((u) => u.isManager).length;
     final techsCount = users.where((u) => u.isTechnician).length;
     final clientsCount = users.where((u) => u.isClient).length;
@@ -29,8 +32,12 @@ class ManagerAdminHomeScreen extends ConsumerWidget {
       body: SafeArea(
         child: RefreshIndicator(
           color: AppColors.primary,
-          onRefresh: () =>
+          onRefresh: () async {
+            await Future.wait([
               ref.read(companyUsersProvider.notifier).refresh(),
+              ref.read(modulesListProvider.notifier).refresh(),
+            ]);
+          },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
@@ -43,7 +50,7 @@ class ManagerAdminHomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Manage company personnel and client accounts',
+                  'Manage company modules, personnel, and client accounts',
                   style: AppTypography.bodySmall,
                 ),
                 const SizedBox(height: 20),
@@ -51,6 +58,14 @@ class ManagerAdminHomeScreen extends ConsumerWidget {
                 // Summary Metrics Row
                 Row(
                   children: [
+                    Expanded(
+                      child: _MetricCard(
+                        label: 'Modules',
+                        value:
+                            modulesAsync.isLoading ? '—' : '${modules.length}',
+                      ),
+                    ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: _MetricCard(
                         label: 'Managers',
@@ -74,6 +89,17 @@ class ManagerAdminHomeScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
+
+                // Hub Card 0: PV Modules (SCR-09)
+                _AdminHubCard(
+                  icon: Icons.solar_power_outlined,
+                  title: 'PV Modules',
+                  subtitle: 'Company photovoltaic arrays, configuration & access',
+                  badgeText:
+                      modulesAsync.isLoading ? null : '${modules.length}',
+                  onTap: () => context.push('/modules'),
+                ),
+                const SizedBox(height: 12),
 
                 // Hub Card 1: Company Users (SCR-30)
                 _AdminHubCard(

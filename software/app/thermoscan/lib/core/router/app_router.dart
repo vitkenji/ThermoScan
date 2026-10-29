@@ -8,7 +8,10 @@ import 'package:thermoscan/features/auth/presentation/splash_screen.dart';
 import 'package:thermoscan/features/companies/presentation/companies_home_screen.dart';
 import 'package:thermoscan/features/companies/presentation/company_details_screen.dart';
 import 'package:thermoscan/features/companies/presentation/create_company_screen.dart';
-import 'package:thermoscan/features/home/presentation/phase1_role_home_screen.dart';
+import 'package:thermoscan/features/modules/presentation/module_access_screen.dart';
+import 'package:thermoscan/features/modules/presentation/module_configuration_screen.dart';
+import 'package:thermoscan/features/modules/presentation/module_overview_screen.dart';
+import 'package:thermoscan/features/modules/presentation/modules_home_screen.dart';
 import 'package:thermoscan/features/profile/presentation/profile_screen.dart';
 import 'package:thermoscan/features/users/presentation/clients_list_screen.dart';
 import 'package:thermoscan/features/users/presentation/company_users_screen.dart';
@@ -125,7 +128,34 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/home',
-        builder: (context, state) => const Phase1RoleHomeScreen(),
+        builder: (context, state) => const ModulesHomeScreen(),
+      ),
+      GoRoute(
+        path: '/modules',
+        builder: (context, state) => const ModulesHomeScreen(
+          showBackButton: true,
+        ),
+      ),
+      GoRoute(
+        path: '/modules/:moduleId',
+        builder: (context, state) {
+          final moduleId = state.pathParameters['moduleId'] ?? '';
+          return ModuleOverviewScreen(moduleId: moduleId);
+        },
+      ),
+      GoRoute(
+        path: '/modules/:moduleId/configuration',
+        builder: (context, state) {
+          final moduleId = state.pathParameters['moduleId'] ?? '';
+          return ModuleConfigurationScreen(moduleId: moduleId);
+        },
+      ),
+      GoRoute(
+        path: '/modules/:moduleId/access',
+        builder: (context, state) {
+          final moduleId = state.pathParameters['moduleId'] ?? '';
+          return ModuleAccessScreen(moduleId: moduleId);
+        },
       ),
     ],
   );

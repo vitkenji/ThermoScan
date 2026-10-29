@@ -73,6 +73,10 @@ class ApiException implements Exception {
         return 'Password must be at least 8 characters long.';
       case 'EMAIL_CONFLICT':
         return 'This email address is already registered.';
+      case 'MAC_CONFLICT':
+        return 'A module with this MAC address is already registered.';
+      case 'MODULE_MANAGER_REQUIRED':
+        return 'At least one active responsible Manager is required.';
       case 'PASSWORD_CHANGE_REQUIRED':
         return 'You must change your temporary password before continuing.';
       case 'FORBIDDEN':
