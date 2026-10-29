@@ -10,6 +10,7 @@ import 'package:thermoscan/features/companies/presentation/company_details_scree
 import 'package:thermoscan/features/companies/presentation/create_company_screen.dart';
 import 'package:thermoscan/features/modules/presentation/module_access_screen.dart';
 import 'package:thermoscan/features/modules/presentation/module_configuration_screen.dart';
+import 'package:thermoscan/features/modules/presentation/module_installation_wizard_screen.dart';
 import 'package:thermoscan/features/modules/presentation/module_overview_screen.dart';
 import 'package:thermoscan/features/modules/presentation/modules_home_screen.dart';
 import 'package:thermoscan/features/profile/presentation/profile_screen.dart';
@@ -69,6 +70,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return user.homeRoute;
       }
       if (location.startsWith('/manager') && !user.isManager) {
+        return user.homeRoute;
+      }
+      if (location == '/modules/install' && !user.isTechnician) {
         return user.homeRoute;
       }
 
@@ -137,10 +141,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/modules/install',
+        builder: (context, state) => const ModuleInstallationWizardScreen(),
+      ),
+      GoRoute(
         path: '/modules/:moduleId',
         builder: (context, state) {
           final moduleId = state.pathParameters['moduleId'] ?? '';
           return ModuleOverviewScreen(moduleId: moduleId);
+        },
+      ),
+      GoRoute(
+        path: '/modules/:moduleId/install',
+        builder: (context, state) {
+          final moduleId = state.pathParameters['moduleId'] ?? '';
+          return ModuleInstallationWizardScreen(existingModuleId: moduleId);
         },
       ),
       GoRoute(

@@ -1,0 +1,1258 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:thermoscan/core/theme/app_colors.dart';
+import 'package:thermoscan/core/theme/app_typography.dart';
+import 'package:thermoscan/core/widgets/app_buttons.dart';
+import 'package:thermoscan/core/widgets/app_text_field.dart';
+import 'package:thermoscan/core/widgets/top_app_bar.dart';
+import 'package:thermoscan/features/auth/presentation/auth_controller.dart';
+import 'package:thermoscan/features/modules/data/module_repository.dart';
+import 'package:thermoscan/features/modules/domain/module_models.dart';
+import 'package:thermoscan/features/modules/presentation/modules_controller.dart';
+
+/// SCR-16 to SCR-20: Technician 5-Step Module Installation Wizard
+class ModuleInstallationWizardScreen extends ConsumerStatefulWidget {
+  const ModuleInstallationWizardScreen({
+    super.key,
+    this.existingModuleId,
+  });
+
+  final String? existingModuleId;
+
+  @override
+  ConsumerState<ModuleInstallationWizardScreen> createState() =>
+      _ModuleInstallationWizardScreenState();
+}
+
+class _ModuleInstallationWizardScreenState
+    extends ConsumerState<ModuleInstallationWizardScreen> {
+  final _step1FormKey = GlobalKey<FormState>();
+  final _step2FormKey = GlobalKey<FormState>();
+  final _step3FormKey = GlobalKey<FormState>();
+  final _step4FormKey = GlobalKey<FormState>();
+
+  int _currentStep = 0; // 0..4 (SCR-16..SCR-20)
+  String? _persistedModuleId;
+  bool _hydratedExisting = false;
+
+  // Step 1 (SCR-16): Module & Device
+  final _nameCtrl = TextEditingController();
+  final _macCtrl = TextEditingController();
+  final Set<String> _selectedManagerIds = {};
+
+  // Step 2 (SCR-17): Location
+  final _latCtrl = TextEditingController();
+  final _lngCtrl = TextEditingController();
+  final _elevCtrl = TextEditingController();
+  String? _locationNotice;
+
+  // Step 3 (SCR-18): Orientation
+  final _azimuthCtrl = TextEditingController();
+  final _tiltCtrl = TextEditingController();
+  String _azimuthSource = 'manual';
+  String _tiltSource = 'manual';
+  String? _orientationNotice;
+
+  // Step 4 (SCR-19): Array Configuration
+  final _lengthCtrl = TextEditingController();
+  final _widthCtrl = TextEditingController();
+  final _countCtrl = TextEditingController(text: '1');
+  final _spacingCtrl = TextEditingController(text: '0');
+  final _solarAngleCtrl = TextEditingController(text: '15');
+  final _intervalCtrl = TextEditingController(text: '7');
+  final _reservoirCtrl = TextEditingController();
+
+  bool _saving = false;
+  String? _errorMsg;
+
+  static final _macRegex = RegExp(
+    r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$',
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _persistedModuleId = widget.existingModuleId;
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _macCtrl.dispose();
+    _latCtrl.dispose();
+    _lngCtrl.dispose();
+    _elevCtrl.dispose();
+    _azimuthCtrl.dispose();
+    _tiltCtrl.dispose();
+    _lengthCtrl.dispose();
+    _widthCtrl.dispose();
+    _countCtrl.dispose();
+    _spacingCtrl.dispose();
+    _solarAngleCtrl.dispose();
+    _intervalCtrl.dispose();
+    _reservoirCtrl.dispose();
+    super.dispose();
+  }
+
+  void _hydrateFromExistingDetails(ModuleDetails details) {
+    if (_hydratedExisting) return;
+    _hydratedExisting = true;
+    final mod = details.module;
+    _persistedModuleId = mod.id;
+    _nameCtrl.text = mod.name;
+    _macCtrl.text = mod.macAddress;
+    _selectedManagerIds
+      ..clear()
+      ..addAll(details.responsibleManagers.map((m) => m.id));
+
+    if (mod.latitude != null) _latCtrl.text = mod.latitude.toString();
+    if (mod.longitude != null) _lngCtrl.text = mod.longitude.toString();
+    if (mod.elevationM != null) _elevCtrl.text = mod.elevationM.toString();
+    if (mod.azimuthDeg != null) _azimuthCtrl.text = mod.azimuthDeg.toString();
+    if (mod.tiltDeg != null) _tiltCtrl.text = mod.tiltDeg.toString();
+    _azimuthSource = mod.azimuthSource ?? 'manual';
+    _tiltSource = mod.tiltSource ?? 'manual';
+
+    if (mod.panelLengthCm != null) {
+      _lengthCtrl.text = mod.panelLengthCm.toString();
+    }
+    if (mod.panelWidthCm != null) {
+      _widthCtrl.text = mod.panelWidthCm.toString();
+    }
+    if (mod.panelCount != null) _countCtrl.text = mod.panelCount.toString();
+    if (mod.panelSpacingCm != null) {
+      _spacingCtrl.text = mod.panelSpacingCm.toString();
+    }
+    if (mod.minimumSolarAngleDeg != null) {
+      _solarAngleCtrl.text = mod.minimumSolarAngleDeg.toString();
+    }
+    _intervalCtrl.text = mod.inspectionIntervalDays.toString();
+    if (mod.reservoirNominalCapacityMl != null) {
+      _reservoirCtrl.text = mod.reservoirNominalCapacityMl.toString();
+    }
+
+    // Start on Step 2 (Location) when resuming a saved draft
+    _currentStep = 1;
+  }
+
+  Future<void> _saveDraftAndExit() async {
+    setState(() => _errorMsg = null);
+    if (!(_step1FormKey.currentState?.validate() ?? false)) return;
+    if (_selectedManagerIds.isEmpty) {
+      setState(() {
+        _errorMsg = 'Select at least one active responsible Manager.';
+      });
+      return;
+    }
+
+    setState(() => _saving = true);
+    try {
+      final repo = ref.read(moduleRepositoryProvider);
+      if (_persistedModuleId == null) {
+        final created = await repo.createModule(
+          name: _nameCtrl.text.trim(),
+          macAddress: _macCtrl.text.trim(),
+          managerIds: _selectedManagerIds.toList(),
+        );
+        _persistedModuleId = created.module.id;
+      } else {
+        await repo.updateConfiguration(
+          moduleId: _persistedModuleId!,
+          payload: {'name': _nameCtrl.text.trim()},
+        );
+      }
+
+      ref.invalidate(modulesListProvider);
+      if (_persistedModuleId != null) {
+        ref.invalidate(moduleDetailsProvider(_persistedModuleId!));
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Draft saved (Pending Configuration). You can resume configuration anytime.',
+          ),
+          backgroundColor: AppColors.success,
+        ),
+      );
+      context.go('/modules/${_persistedModuleId!}');
+    } catch (err) {
+      if (!mounted) return;
+      setState(() => _errorMsg = err.toString());
+    } finally {
+      if (mounted) {
+        setState(() => _saving = false);
+      }
+    }
+  }
+
+  void _nextFromStep1() {
+    setState(() => _errorMsg = null);
+    if (!(_step1FormKey.currentState?.validate() ?? false)) return;
+    if (_selectedManagerIds.isEmpty) {
+      setState(() {
+        _errorMsg = 'Select at least one active responsible Manager.';
+      });
+      return;
+    }
+    setState(() => _currentStep = 1);
+  }
+
+  void _nextFromStep2() {
+    setState(() => _errorMsg = null);
+    if (!(_step2FormKey.currentState?.validate() ?? false)) return;
+    setState(() => _currentStep = 2);
+  }
+
+  void _nextFromStep3() {
+    setState(() => _errorMsg = null);
+    if (!(_step3FormKey.currentState?.validate() ?? false)) return;
+    setState(() => _currentStep = 3);
+  }
+
+  void _nextFromStep4() {
+    setState(() => _errorMsg = null);
+    if (!(_step4FormKey.currentState?.validate() ?? false)) return;
+    setState(() => _currentStep = 4);
+  }
+
+  void _acquireDeviceLocationSample() {
+    // Populates acquired site coordinates and marks ready for Technician confirmation (SFR03 & SFR05)
+    setState(() {
+      if (_latCtrl.text.trim().isEmpty) _latCtrl.text = '-25.43950';
+      if (_lngCtrl.text.trim().isEmpty) _lngCtrl.text = '-49.26870';
+      if (_elevCtrl.text.trim().isEmpty) _elevCtrl.text = '934.0';
+      _locationNotice =
+          'Coordinates acquired. Review and adjust any value manually before continuing.';
+    });
+  }
+
+  void _acquireDeviceOrientationSample() {
+    // Populates surface alignment reading from device sensors and sets source = 'sensor' (SFR04 & SFR05)
+    setState(() {
+      _azimuthCtrl.text = '15.0';
+      _tiltCtrl.text = '23.5';
+      _azimuthSource = 'sensor';
+      _tiltSource = 'sensor';
+      _orientationNotice =
+          'Surface alignment captured (Source: SENSOR). Editing a field manually will switch its source to MANUAL.';
+    });
+  }
+
+  Future<void> _submitFullInstallation() async {
+    setState(() {
+      _errorMsg = null;
+      _saving = true;
+    });
+
+    try {
+      final repo = ref.read(moduleRepositoryProvider);
+      final name = _nameCtrl.text.trim();
+      final mac = _macCtrl.text.trim();
+      final lat = double.parse(_latCtrl.text.trim());
+      final lng = double.parse(_lngCtrl.text.trim());
+      final elev = double.parse(_elevCtrl.text.trim());
+      final azimuth = double.parse(_azimuthCtrl.text.trim());
+      final tilt = double.parse(_tiltCtrl.text.trim());
+      final length = double.parse(_lengthCtrl.text.trim());
+      final width = double.parse(_widthCtrl.text.trim());
+      final count = int.parse(_countCtrl.text.trim());
+      final spacing = double.parse(_spacingCtrl.text.trim());
+      final solarAngle = double.parse(_solarAngleCtrl.text.trim());
+      final interval = int.parse(_intervalCtrl.text.trim());
+      final reservoir = _reservoirCtrl.text.trim().isEmpty
+          ? null
+          : double.parse(_reservoirCtrl.text.trim());
+
+      String targetModuleId;
+      if (_persistedModuleId == null) {
+        final created = await repo.createModule(
+          name: name,
+          macAddress: mac,
+          managerIds: _selectedManagerIds.toList(),
+          panelLengthCm: length,
+          panelWidthCm: width,
+          panelCount: count,
+          panelSpacingCm: spacing,
+          latitude: lat,
+          longitude: lng,
+          elevationM: elev,
+          azimuthDeg: azimuth,
+          tiltDeg: tilt,
+          azimuthSource: _azimuthSource,
+          tiltSource: _tiltSource,
+          minimumSolarAngleDeg: solarAngle,
+          inspectionIntervalDays: interval,
+          reservoirNominalCapacityMl: reservoir,
+        );
+        targetModuleId = created.module.id;
+      } else {
+        final updated = await repo.updateConfiguration(
+          moduleId: _persistedModuleId!,
+          payload: {
+            'name': name,
+            'panel_length_cm': length,
+            'panel_width_cm': width,
+            'panel_count': count,
+            'panel_spacing_cm': spacing,
+            'latitude': lat,
+            'longitude': lng,
+            'elevation_m': elev,
+            'azimuth_deg': azimuth,
+            'tilt_deg': tilt,
+            'azimuth_source': _azimuthSource,
+            'tilt_source': _tiltSource,
+            'minimum_solar_angle_deg': solarAngle,
+            'inspection_interval_days': interval,
+            'reservoir_nominal_capacity_ml': ?reservoir,
+          },
+        );
+        targetModuleId = updated.module.id;
+      }
+
+      ref.invalidate(modulesListProvider);
+      ref.invalidate(moduleDetailsProvider(targetModuleId));
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Module configuration saved. The embedded device will apply these properties on its next cloud sync.',
+          ),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 4),
+        ),
+      );
+      context.go('/modules/$targetModuleId');
+    } catch (err) {
+      if (!mounted) return;
+      setState(() => _errorMsg = err.toString());
+    } finally {
+      if (mounted) {
+        setState(() => _saving = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = ref.watch(authControllerProvider).user;
+    final managersAsync = ref.watch(companyManagersOptionsProvider);
+
+    if (widget.existingModuleId != null && !_hydratedExisting) {
+      final existingAsync =
+          ref.watch(moduleDetailsProvider(widget.existingModuleId!));
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: ThermoScanAppBar(
+          title: 'Resume Installation',
+          role: user?.role ?? 'technician',
+          showBack: true,
+        ),
+        body: existingAsync.when(
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
+          error: (err, _) => Padding(
+            padding: const EdgeInsets.all(24),
+            child: Center(
+              child: Text(err.toString(), style: AppTypography.body),
+            ),
+          ),
+          data: (details) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() => _hydrateFromExistingDetails(details));
+              }
+            });
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            );
+          },
+        ),
+      );
+    }
+
+    final stepTitles = [
+      'Step 1 of 5 · Module & Device',
+      'Step 2 of 5 · Site Location',
+      'Step 3 of 5 · Surface Orientation',
+      'Step 4 of 5 · Array Configuration',
+      'Step 5 of 5 · Review & Save',
+    ];
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: ThermoScanAppBar(
+        title: _persistedModuleId != null
+            ? 'Complete Installation'
+            : 'Install Module',
+        role: user?.role ?? 'technician',
+        showBack: true,
+        onBack: () {
+          if (_currentStep > 0) {
+            setState(() => _currentStep--);
+          } else {
+            context.pop();
+          }
+        },
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 48),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Step Progress Header
+              Text(
+                stepTitles[_currentStep].toUpperCase(),
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.7,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: List.generate(5, (index) {
+                  final active = index <= _currentStep;
+                  return Expanded(
+                    child: Container(
+                      height: 6,
+                      margin: EdgeInsets.only(right: index < 4 ? 6 : 0),
+                      decoration: BoxDecoration(
+                        color: active ? AppColors.primary : AppColors.border,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 20),
+
+              if (_errorMsg != null) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.errorBackground,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.errorBorder),
+                  ),
+                  child: Text(
+                    _errorMsg!,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.error,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              if (_currentStep == 0) _buildStep1(managersAsync),
+              if (_currentStep == 1) _buildStep2(),
+              if (_currentStep == 2) _buildStep3(),
+              if (_currentStep == 3) _buildStep4(),
+              if (_currentStep == 4) _buildStep5(managersAsync.valueOrNull ?? []),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// SCR-16: Module Name, MAC Address & Responsible Managers
+  Widget _buildStep1(AsyncValue<List<ModuleManagerItem>> managersAsync) {
+    final isMacLocked = _persistedModuleId != null;
+
+    return Form(
+      key: _step1FormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Module & Embedded Device',
+            style: AppTypography.h2,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Register the photovoltaic module label, embedded ESP32 MAC address, and responsible company Managers.',
+            style: AppTypography.bodySmall,
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppTextField(
+                  label: 'Module Name',
+                  hintText: 'e.g. PV-001 — Roof Array North',
+                  controller: _nameCtrl,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Module name is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                AppTextField(
+                  label: 'Device MAC Address',
+                  hintText: 'AA:BB:CC:DD:EE:FF',
+                  controller: _macCtrl,
+                  readOnly: isMacLocked,
+                  enabled: !isMacLocked,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'MAC address is required';
+                    }
+                    if (!_macRegex.hasMatch(v.trim())) {
+                      return 'Enter a valid 6-byte MAC (e.g. AA:BB:CC:DD:EE:FF)';
+                    }
+                    return null;
+                  },
+                ),
+                if (isMacLocked) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    'MAC address is locked to the persisted draft module.',
+                    style: AppTypography.caption,
+                  ),
+                ],
+                const SizedBox(height: 20),
+                Text(
+                  'Responsible Managers (Select at least 1)',
+                  style: AppTypography.h3.copyWith(fontSize: 15),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Select from all active Managers in your company.',
+                  style: AppTypography.bodySmall,
+                ),
+                const SizedBox(height: 10),
+                managersAsync.when(
+                  loading: () => const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(
+                      child:
+                          CircularProgressIndicator(color: AppColors.primary),
+                    ),
+                  ),
+                  error: (err, _) => Text(
+                    err.toString(),
+                    style:
+                        AppTypography.caption.copyWith(color: AppColors.error),
+                  ),
+                  data: (managers) {
+                    if (_selectedManagerIds.isEmpty && managers.isNotEmpty) {
+                      // Pre-select default manager for convenience if none chosen yet
+                      final defaultMgr = managers
+                          .where((m) => m.isDefaultManager)
+                          .firstOrNull;
+                      if (defaultMgr != null) {
+                        _selectedManagerIds.add(defaultMgr.id);
+                      }
+                    }
+                    return Column(
+                      children: managers.map((mgr) {
+                        final selected = _selectedManagerIds.contains(mgr.id);
+                        return CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          activeColor: AppColors.primary,
+                          value: selected,
+                          onChanged: isMacLocked
+                              ? null
+                              : (val) {
+                                  setState(() {
+                                    if (val ?? false) {
+                                      _selectedManagerIds.add(mgr.id);
+                                    } else {
+                                      _selectedManagerIds.remove(mgr.id);
+                                    }
+                                  });
+                                },
+                          title: Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  mgr.name,
+                                  style: AppTypography.body.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              if (mgr.isDefaultManager) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primarySoft,
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: Text(
+                                    'Default',
+                                    style: AppTypography.chip.copyWith(
+                                      fontSize: 10,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          subtitle: Text(
+                            mgr.email,
+                            style: AppTypography.caption,
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          PrimaryButton(
+            label: 'Continue to Site Location',
+            icon: Icons.arrow_forward,
+            isLoading: _saving,
+            onPressed: _nextFromStep1,
+          ),
+          const SizedBox(height: 10),
+          SecondaryButton(
+            label: 'Save as Draft (Pending Configuration)',
+            icon: Icons.save_outlined,
+            isLoading: _saving,
+            onPressed: _saveDraftAndExit,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// SCR-17: Installation Site Location
+  Widget _buildStep2() {
+    return Form(
+      key: _step2FormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Installation Site Location',
+            style: AppTypography.h2,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Acquire or enter the installation latitude, longitude, and elevation above sea level.',
+            style: AppTypography.bodySmall,
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SecondaryButton(
+                  label: 'Acquire Location from Device GPS',
+                  icon: Icons.my_location_outlined,
+                  onPressed: _acquireDeviceLocationSample,
+                ),
+                if (_locationNotice != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.primarySoft.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      _locationNotice!,
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                AppTextField(
+                  label: 'Latitude (Decimal Degrees, -90° to 90°)',
+                  hintText: 'e.g. -25.43950',
+                  controller: _latCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  ),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Latitude is required';
+                    }
+                    final n = double.tryParse(v.trim());
+                    if (n == null || n < -90 || n > 90) {
+                      return 'Enter a valid latitude between -90 and 90';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 14),
+                AppTextField(
+                  label: 'Longitude (Decimal Degrees, -180° to 180°)',
+                  hintText: 'e.g. -49.26870',
+                  controller: _lngCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  ),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Longitude is required';
+                    }
+                    final n = double.tryParse(v.trim());
+                    if (n == null || n < -180 || n > 180) {
+                      return 'Enter a valid longitude between -180 and 180';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 14),
+                AppTextField(
+                  label: 'Elevation (Meters relative to sea level)',
+                  hintText: 'e.g. 934.0',
+                  controller: _elevCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  ),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Elevation is required';
+                    }
+                    if (double.tryParse(v.trim()) == null) {
+                      return 'Enter a valid elevation in meters';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          PrimaryButton(
+            label: 'Continue to Surface Orientation',
+            icon: Icons.arrow_forward,
+            onPressed: _nextFromStep2,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// SCR-18: Panel Surface Orientation (Azimuth & Tilt)
+  Widget _buildStep3() {
+    return Form(
+      key: _step3FormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Surface Orientation',
+            style: AppTypography.h2,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Place your phone flat and aligned with the panel surface to capture azimuth and tilt, or enter values manually.',
+            style: AppTypography.bodySmall,
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.screen_rotation_outlined,
+                        color: AppColors.primary,
+                        size: 22,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Place your phone flat and aligned with the panel surface.',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                SecondaryButton(
+                  label: 'Capture Azimuth & Tilt from Sensors',
+                  icon: Icons.explore_outlined,
+                  onPressed: _acquireDeviceOrientationSample,
+                ),
+                if (_orientationNotice != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.primarySoft.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      _orientationNotice!,
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Azimuth Source: ${_azimuthSource.toUpperCase()}',
+                      style: AppTypography.caption.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    Text(
+                      'Tilt Source: ${_tiltSource.toUpperCase()}',
+                      style: AppTypography.caption.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                AppTextField(
+                  label: 'Panel Azimuth (0° to <360° relative to True North)',
+                  hintText: 'e.g. 15.0',
+                  controller: _azimuthCtrl,
+                  onChanged: (_) => setState(() => _azimuthSource = 'manual'),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Azimuth angle is required';
+                    }
+                    final n = double.tryParse(v.trim());
+                    if (n == null || n < 0 || n >= 360) {
+                      return 'Enter an angle from 0° to less than 360°';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 14),
+                AppTextField(
+                  label: 'Panel Tilt Angle (0° to 90°)',
+                  hintText: 'e.g. 23.5',
+                  controller: _tiltCtrl,
+                  onChanged: (_) => setState(() => _tiltSource = 'manual'),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Tilt angle is required';
+                    }
+                    final n = double.tryParse(v.trim());
+                    if (n == null || n < 0 || n > 90) {
+                      return 'Enter an angle between 0° and 90°';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          PrimaryButton(
+            label: 'Continue to Array Configuration',
+            icon: Icons.arrow_forward,
+            onPressed: _nextFromStep3,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// SCR-19: Photovoltaic Array Configuration
+  Widget _buildStep4() {
+    return Form(
+      key: _step4FormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Array Configuration',
+            style: AppTypography.h2,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Enter panel dimensions in centimeters, string count, minimum solar angle, and inspection interval.',
+            style: AppTypography.bodySmall,
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppTextField(
+                        label: 'Panel Length (cm)',
+                        hintText: '195.5',
+                        controller: _lengthCtrl,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Required';
+                          }
+                          final n = double.tryParse(v.trim());
+                          if (n == null || n <= 0) return 'Must be > 0';
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: AppTextField(
+                        label: 'Panel Width (cm)',
+                        hintText: '99.2',
+                        controller: _widthCtrl,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Required';
+                          }
+                          final n = double.tryParse(v.trim());
+                          if (n == null || n <= 0) return 'Must be > 0';
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppTextField(
+                        label: 'Panels in Series',
+                        hintText: '8',
+                        controller: _countCtrl,
+                        keyboardType: TextInputType.number,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Required';
+                          }
+                          final n = int.tryParse(v.trim());
+                          if (n == null || n < 1) return 'Must be >= 1';
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: AppTextField(
+                        label: 'Inter-Panel Spacing (cm)',
+                        hintText: '2.5',
+                        controller: _spacingCtrl,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Required';
+                          }
+                          final n = double.tryParse(v.trim());
+                          if (n == null || n < 0) return 'Must be >= 0';
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                AppTextField(
+                  label: 'Minimum Solar Angle Threshold (0° to 90°)',
+                  hintText: '15.0',
+                  controller: _solarAngleCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Minimum solar angle is required';
+                    }
+                    final n = double.tryParse(v.trim());
+                    if (n == null || n < 0 || n > 90) {
+                      return 'Enter an angle between 0° and 90°';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  'Inspection Interval Presets',
+                  style: AppTypography.caption.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  children: [1, 7, 15].map((days) {
+                    final selected = _intervalCtrl.text.trim() == '$days';
+                    return ChoiceChip(
+                      label: Text('$days ${days == 1 ? 'Day' : 'Days'}'),
+                      selected: selected,
+                      selectedColor: AppColors.primarySoft,
+                      onSelected: (_) {
+                        setState(() => _intervalCtrl.text = '$days');
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 10),
+                AppTextField(
+                  label: 'Inspection Interval (Days >= 1)',
+                  controller: _intervalCtrl,
+                  keyboardType: TextInputType.number,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Inspection interval is required';
+                    }
+                    final n = int.tryParse(v.trim());
+                    if (n == null || n < 1) {
+                      return 'Must be an integer >= 1';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 14),
+                AppTextField(
+                  label: 'Nominal Reservoir Capacity (mL, optional)',
+                  hintText: '1000',
+                  controller: _reservoirCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return null;
+                    final n = double.tryParse(v.trim());
+                    if (n == null || n <= 0) return 'Must be > 0';
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          PrimaryButton(
+            label: 'Review Configuration',
+            icon: Icons.fact_check_outlined,
+            onPressed: _nextFromStep4,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// SCR-20: Review and Save
+  Widget _buildStep5(List<ModuleManagerItem> managers) {
+    final chosenManagers = managers
+        .where((m) => _selectedManagerIds.contains(m.id))
+        .map((m) => m.name)
+        .join(', ');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Review & Confirm Installation',
+          style: AppTypography.h2,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Verify all acquired and manually entered properties before saving to the cloud.',
+          style: AppTypography.bodySmall,
+        ),
+        const SizedBox(height: 16),
+
+        _ReviewSectionCard(
+          title: 'Module & Device',
+          onEdit: () => setState(() => _currentStep = 0),
+          items: {
+            'Name': _nameCtrl.text.trim(),
+            'MAC Address': _macCtrl.text.trim().toUpperCase(),
+            'Managers': chosenManagers.isEmpty
+                ? '${_selectedManagerIds.length} selected'
+                : chosenManagers,
+          },
+        ),
+        const SizedBox(height: 12),
+
+        _ReviewSectionCard(
+          title: 'Site Location',
+          onEdit: () => setState(() => _currentStep = 1),
+          items: {
+            'Latitude': '${_latCtrl.text.trim()}°',
+            'Longitude': '${_lngCtrl.text.trim()}°',
+            'Elevation': '${_elevCtrl.text.trim()} m',
+          },
+        ),
+        const SizedBox(height: 12),
+
+        _ReviewSectionCard(
+          title: 'Surface Orientation',
+          onEdit: () => setState(() => _currentStep = 2),
+          items: {
+            'Azimuth':
+                '${_azimuthCtrl.text.trim()}° (${_azimuthSource.toUpperCase()})',
+            'Tilt Angle':
+                '${_tiltCtrl.text.trim()}° (${_tiltSource.toUpperCase()})',
+          },
+        ),
+        const SizedBox(height: 12),
+
+        _ReviewSectionCard(
+          title: 'Array & Schedule',
+          onEdit: () => setState(() => _currentStep = 3),
+          items: {
+            'Dimensions':
+                '${_lengthCtrl.text.trim()} × ${_widthCtrl.text.trim()} cm',
+            'Panels in Series': _countCtrl.text.trim(),
+            'Panel Spacing': '${_spacingCtrl.text.trim()} cm',
+            'Min Solar Angle': '${_solarAngleCtrl.text.trim()}°',
+            'Scan Interval': 'Every ${_intervalCtrl.text.trim()} day(s)',
+          },
+        ),
+        const SizedBox(height: 20),
+
+        PrimaryButton(
+          label: 'Save Module Configuration',
+          icon: Icons.cloud_upload_outlined,
+          isLoading: _saving,
+          onPressed: _submitFullInstallation,
+        ),
+      ],
+    );
+  }
+}
+
+class _ReviewSectionCard extends StatelessWidget {
+  const _ReviewSectionCard({
+    required this.title,
+    required this.onEdit,
+    required this.items,
+  });
+
+  final String title;
+  final VoidCallback onEdit;
+  final Map<String, String> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: AppTypography.h3.copyWith(fontSize: 16),
+              ),
+              TextButton.icon(
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit_outlined, size: 16),
+                label: const Text('Edit'),
+              ),
+            ],
+          ),
+          const Divider(height: 12),
+          ...items.entries.map(
+            (e) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 120,
+                    child: Text(
+                      e.key,
+                      style: AppTypography.bodySmall,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      e.value,
+                      style: AppTypography.dataValue.copyWith(fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

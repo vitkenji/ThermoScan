@@ -31,6 +31,7 @@ software/backend/
 │   ├── db/                   # sqlc-generated database access layer
 │   ├── httpapi/              # Chi router assembly, CORS, and integration tests
 │   ├── httpjson/             # Standardized JSON response and error helpers
+│   ├── module/               # Module installation, configuration, interval logs, and access control
 │   └── user/                 # Manager company user & client administration
 └── sqlc.yaml                 # sqlc code generation configuration
 ```
@@ -90,6 +91,22 @@ All endpoints are prefixed with `/api/v1` (except `/health`).
 | `GET` | `/api/v1/users/{userID}` | `manager` | Retrieve user details within the caller's company (includes `manager_ids` for Technicians) |
 | `PATCH` | `/api/v1/users/{userID}/status` | `manager` | Activate or deactivate a `technician` or `client` in the caller's company |
 | `POST` | `/api/v1/users/{userID}/reset-password` | `manager` | Reset a `technician` or `client` password to a new temporary password |
+| `PUT` | `/api/v1/users/{userID}/managers` | `manager` | Replace the responsible Managers assigned to a `technician` |
+
+### PV Modules, Installation, Configuration & Access Control
+
+| Method | Path | Role | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/v1/modules/company-managers` | `technician`, `manager` | List all active Managers in the caller's company for installation assignment |
+| `POST` | `/api/v1/modules` | `technician` | Register a new module (`pending_configuration` draft or `active` complete configuration) with MAC and responsible Managers |
+| `GET` | `/api/v1/modules` | `manager`, `technician`, `client` | List modules accessible to the caller within their company |
+| `GET` | `/api/v1/modules/{moduleID}` | `manager`, `technician`, `client` | Retrieve module details, caller permissions, and responsible Managers |
+| `PATCH` | `/api/v1/modules/{moduleID}/configuration` | `manager`, `technician`, `client` | Update module configuration fields according to the caller's module-level permissions and log interval changes |
+| `GET` | `/api/v1/modules/{moduleID}/interval-logs` | `manager`, `technician`, `client` | List inspection interval change history for an accessible module |
+| `PUT` | `/api/v1/modules/{moduleID}/managers` | `manager` | Update responsible Managers for a module (minimum 1 active Manager required) |
+| `PUT` | `/api/v1/modules/{moduleID}/technicians/{technicianID}` | `manager` | Grant or revoke (`can_view`) Technician access to a module (including installer) |
+| `PUT` | `/api/v1/modules/{moduleID}/clients` | `manager` | Update Clients assigned to a module |
+| `PATCH` | `/api/v1/modules/{moduleID}/email-preferences` | `client` | Enable or disable operational email notifications for an assigned module |
 
 ### Standardized Error Format
 

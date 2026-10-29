@@ -6,6 +6,8 @@ import 'package:thermoscan/features/auth/data/auth_repository.dart';
 import 'package:thermoscan/features/auth/domain/auth_user.dart';
 import 'package:thermoscan/features/companies/data/company_repository.dart';
 import 'package:thermoscan/features/companies/domain/company_models.dart';
+import 'package:thermoscan/features/modules/data/module_repository.dart';
+import 'package:thermoscan/features/modules/domain/module_models.dart';
 import 'package:thermoscan/features/users/data/user_repository.dart';
 import 'package:thermoscan/features/users/domain/user_models.dart';
 import 'package:thermoscan/main.dart';
@@ -63,6 +65,40 @@ class _FakeUserRepository extends UserRepository {
         mustChangePassword: false,
         createdAt: '2026-10-29T10:00:00Z',
         updatedAt: '2026-10-29T10:00:00Z',
+      ),
+    ];
+  }
+}
+
+class _FakeModuleRepository extends ModuleRepository {
+  _FakeModuleRepository() : super(dio: Dio());
+
+  @override
+  Future<List<PvModule>> listModules({
+    int limit = 100,
+    int offset = 0,
+  }) async {
+    return const [
+      PvModule(
+        id: 'mod-1',
+        companyId: 'comp-1',
+        installerTechnicianId: 'tech-1',
+        installerName: 'Marco Silva',
+        installerEmail: 'marco@soltech.io',
+        name: 'PV-001 Roof Array',
+        macAddress: 'AA:BB:CC:DD:EE:01',
+        isActive: true,
+        monitoringStatus: 'active',
+        inspectionIntervalDays: 7,
+        createdAt: '2026-10-29T10:00:00Z',
+        updatedAt: '2026-10-29T10:00:00Z',
+        userRelationship: 'installer_technician',
+        permissions: ModulePermissions(
+          canEditGeometryAndLocation: true,
+          canEditSolarAngle: true,
+          canEditInterval: true,
+          canManageAccess: false,
+        ),
       ),
     ];
   }
@@ -150,6 +186,7 @@ void main() {
             _FakeAuthRepository(initialUser: managerUser),
           ),
           userRepositoryProvider.overrideWithValue(_FakeUserRepository()),
+          moduleRepositoryProvider.overrideWithValue(_FakeModuleRepository()),
         ],
         child: const ThermoScanApp(),
       ),
@@ -158,8 +195,47 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Administration'), findsOneWidget);
+    expect(find.text('PV Modules'), findsOneWidget);
     expect(find.text('Company Users'), findsOneWidget);
     expect(find.text('Clients'), findsOneWidget);
+  });
+
+  testWidgets('Routes authenticated Technician to Modules Home (SCR-09)',
+      (WidgetTester tester) async {
+    final tokenStorage = InMemoryTokenStorage();
+    await tokenStorage.saveTokens(
+      accessToken: 'fake-access',
+      refreshToken: 'fake-refresh',
+    );
+
+    const techUser = AuthUser(
+      id: 'tech-1',
+      companyId: 'comp-1',
+      name: 'Marco Silva',
+      email: 'marco@soltech.io',
+      role: 'technician',
+      isActive: true,
+      mustChangePassword: false,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tokenStorageProvider.overrideWithValue(tokenStorage),
+          authRepositoryProvider.overrideWithValue(
+            _FakeAuthRepository(initialUser: techUser),
+          ),
+          moduleRepositoryProvider.overrideWithValue(_FakeModuleRepository()),
+        ],
+        child: const ThermoScanApp(),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('PV Modules'), findsOneWidget);
+    expect(find.text('Install'), findsOneWidget);
+    expect(find.text('PV-001 Roof Array'), findsOneWidget);
   });
 
   testWidgets('Routes authenticated System Admin to Companies Home (SCR-04)',

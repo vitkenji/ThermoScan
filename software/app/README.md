@@ -28,8 +28,10 @@ software/app/thermoscan/lib/
 │   ├── theme/                # Design system colors, typography, and Material theme
 │   └── widgets/              # Reusable UI components (logo, buttons, inputs, chips, top bar, modals)
 ├── features/
-│   ├── auth/                 # Splash, login, mandatory password change, profile, and role landing
+│   ├── auth/                 # Splash, login, mandatory password change, and session state
 │   ├── companies/            # System Admin company list, creation, details, and Manager password reset
+│   ├── modules/              # PV modules list, 5-step installation wizard, overview, configuration, interval log, and access control
+│   ├── profile/              # Own profile editing, password change, and Technician responsible Managers
 │   └── users/                # Manager hub, user & client lists, user/client creation, status toggle, and password reset
 └── main.dart                 # Application entrypoint
 ```
@@ -53,7 +55,14 @@ software/app/thermoscan/lib/
 - **Dedicated Clients Management:** Focused list and creation workflow for `client` accounts with search, status filter (`All`, `Active Only`, `Inactive`), status toggle, and temporary password reset.
 
 ### Technician (`technician`) & Client (`client`)
-- **Role Workspace & Profile Access:** Authenticated landing screen displaying account status, company membership, and direct access to profile settings and assigned responsible Managers.
+- **PV Modules Home:** Searchable and filterable list of accessible modules (`Active`, `Pending Config`), showing MAC address, array summary, scan interval, and relationship badge.
+- **5-Step Module Installation Wizard (`technician` only):**
+  1. Module name, MAC address validation, and selection of responsible Managers from all active company Managers (supports saving a draft in `pending_configuration` to resume later).
+  2. Installation site location (GPS coordinate capture and manual review/editing of latitude, longitude, and elevation).
+  3. Surface orientation (sensor capture and manual entry of azimuth and tilt angle, preserving `SENSOR`/`MANUAL` source tags).
+  4. Photovoltaic array configuration (dimensions, panel count, spacing, minimum solar angle, and inspection interval).
+  5. Full review and confirmation.
+- **Module Overview & Configuration:** Role-aware module configuration editing (geometry/location for Manager and Installer Technician; minimum solar angle for Manager and any authorized Technician; inspection interval for Manager, Installer Technician, and assigned Client), inspection interval audit history, Manager access/responsibility control, and Client per-module operational email notification toggle.
 
 ## Environment Configuration
 

@@ -24,10 +24,16 @@ Flutter mobile client for the ThermoScan photovoltaic module monitoring and loca
   - Create Company + initial default Manager flow (`POST /api/v1/companies`)
   - Company Details & Manager password reset (`GET /api/v1/companies/{id}`, `POST /api/v1/companies/{id}/managers/{userId}/reset-password`)
 - **`lib/features/users/`** (`manager`):
-  - Company Administration home hub
+  - Company Administration home hub (with live counters for Modules, Managers, Technicians, and Clients)
   - Company Users list with search, role filtering, logged-in user indicator (`You`), status toggle, and password reset (`GET /api/v1/users`, `PATCH /api/v1/users/{id}/status`, `POST /api/v1/users/{id}/reset-password`)
   - Create User screen supporting `manager`, `technician` (with responsible Manager assignment), and `client` (`POST /api/v1/users`)
   - Dedicated Clients list and Create Client screen
+- **`lib/features/modules/`** (`manager`, `technician`, `client`):
+  - PV Modules home list (`SCR-09`) with search, status filter, and Technician installation entry point
+  - 5-step Technician Module Installation Wizard (`SCR-16` to `SCR-20`) with draft save/resume support (`pending_configuration` -> `active`)
+  - Module Overview (`SCR-10`) and Client operational email notification toggle (`SCR-28`)
+  - Role-aware Module Configuration and Inspection Interval Change History (`SCR-13`)
+  - Manager Module Access & Responsible Managers screen (`SCR-14`)
 
 ## Development Commands
 
