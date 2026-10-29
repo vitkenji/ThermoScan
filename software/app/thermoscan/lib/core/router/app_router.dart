@@ -10,6 +10,10 @@ import 'package:thermoscan/features/companies/presentation/company_details_scree
 import 'package:thermoscan/features/companies/presentation/create_company_screen.dart';
 import 'package:thermoscan/features/home/presentation/phase1_role_home_screen.dart';
 import 'package:thermoscan/features/profile/presentation/profile_screen.dart';
+import 'package:thermoscan/features/users/presentation/clients_list_screen.dart';
+import 'package:thermoscan/features/users/presentation/company_users_screen.dart';
+import 'package:thermoscan/features/users/presentation/create_client_screen.dart';
+import 'package:thermoscan/features/users/presentation/create_user_screen.dart';
 import 'package:thermoscan/features/users/presentation/manager_admin_home_screen.dart';
 
 class _RouterRefreshNotifier extends ChangeNotifier {
@@ -102,6 +106,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/manager',
         builder: (context, state) => const ManagerAdminHomeScreen(),
+      ),
+      GoRoute(
+        path: '/manager/users',
+        builder: (context, state) => const CompanyUsersScreen(),
+      ),
+      GoRoute(
+        path: '/manager/users/new',
+        builder: (context, state) => const CreateUserScreen(),
+      ),
+      GoRoute(
+        path: '/manager/clients',
+        builder: (context, state) => const ClientsListScreen(),
+      ),
+      GoRoute(
+        path: '/manager/clients/new',
+        builder: (context, state) => const CreateClientScreen(),
       ),
       GoRoute(
         path: '/home',
