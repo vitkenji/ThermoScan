@@ -1,3 +1,29 @@
+class ResponsibleManagerInfo {
+  const ResponsibleManagerInfo({
+    required this.id,
+    required this.name,
+    required this.email,
+  });
+
+  final String id;
+  final String name;
+  final String email;
+
+  factory ResponsibleManagerInfo.fromJson(Map<String, dynamic> json) {
+    return ResponsibleManagerInfo(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'email': email,
+      };
+}
+
 class AuthUser {
   const AuthUser({
     required this.id,
@@ -7,6 +33,7 @@ class AuthUser {
     required this.role,
     required this.isActive,
     required this.mustChangePassword,
+    this.responsibleManagers = const [],
   });
 
   final String id;
@@ -16,6 +43,7 @@ class AuthUser {
   final String role; // 'system_admin' | 'manager' | 'technician' | 'client'
   final bool isActive;
   final bool mustChangePassword;
+  final List<ResponsibleManagerInfo> responsibleManagers;
 
   bool get isSystemAdmin => role == 'system_admin';
   bool get isManager => role == 'manager';
@@ -62,6 +90,8 @@ class AuthUser {
   }
 
   factory AuthUser.fromJson(Map<String, dynamic> json) {
+    final rawManagers =
+        json['responsible_managers'] as List<dynamic>? ?? const [];
     return AuthUser(
       id: json['id'] as String? ?? '',
       companyId: json['company_id'] as String?,
@@ -70,6 +100,10 @@ class AuthUser {
       role: json['role'] as String? ?? 'client',
       isActive: json['is_active'] as bool? ?? true,
       mustChangePassword: json['must_change_password'] as bool? ?? false,
+      responsibleManagers: rawManagers
+          .whereType<Map<String, dynamic>>()
+          .map(ResponsibleManagerInfo.fromJson)
+          .toList(),
     );
   }
 
@@ -81,6 +115,9 @@ class AuthUser {
         'role': role,
         'is_active': isActive,
         'must_change_password': mustChangePassword,
+        if (responsibleManagers.isNotEmpty)
+          'responsible_managers':
+              responsibleManagers.map((m) => m.toJson()).toList(),
       };
 }
 

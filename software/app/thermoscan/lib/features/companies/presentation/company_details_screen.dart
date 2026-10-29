@@ -315,23 +315,6 @@ class _ManagerRowCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              manager.initials,
-              style: AppTypography.body.copyWith(
-                color: AppColors.surface,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -352,6 +335,7 @@ class _ManagerRowCard extends StatelessWidget {
                   spacing: 6,
                   runSpacing: 4,
                   children: [
+                    StatusChip(isActive: manager.isActive),
                     if (manager.isDefaultManager)
                       Container(
                         padding: const EdgeInsets.symmetric(

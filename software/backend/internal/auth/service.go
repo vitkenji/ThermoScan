@@ -30,17 +30,24 @@ type DB interface {
 	Begin(ctx context.Context) (pgx.Tx, error)
 }
 
+type ResponsibleManagerDTO struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
 type UserDTO struct {
-	ID                 string  `json:"id"`
-	CompanyID          *string `json:"company_id"`
-	Name               string  `json:"name"`
-	Email              string  `json:"email"`
-	Role               string  `json:"role"`
-	IsActive           bool    `json:"is_active"`
-	IsDefaultManager   bool    `json:"is_default_manager"`
-	MustChangePassword bool    `json:"must_change_password"`
-	CreatedAt          string  `json:"created_at"`
-	UpdatedAt          string  `json:"updated_at"`
+	ID                  string                  `json:"id"`
+	CompanyID           *string                 `json:"company_id"`
+	Name                string                  `json:"name"`
+	Email               string                  `json:"email"`
+	Role                string                  `json:"role"`
+	IsActive            bool                    `json:"is_active"`
+	IsDefaultManager    bool                    `json:"is_default_manager"`
+	MustChangePassword  bool                    `json:"must_change_password"`
+	ResponsibleManagers []ResponsibleManagerDTO `json:"responsible_managers,omitempty"`
+	CreatedAt           string                  `json:"created_at"`
+	UpdatedAt           string                  `json:"updated_at"`
 }
 
 type AuthResponse struct {
@@ -109,12 +116,15 @@ func (s *Service) Login(ctx context.Context, email, password string) (AuthRespon
 		return AuthResponse{}, err
 	}
 
+	userDTO := mapUserRowToDTO(u.ID, u.CompanyID, u.Name, u.Email, u.Role, u.IsActive, u.IsDefaultManager, u.MustChangePassword, u.CreatedAt, u.UpdatedAt)
+	userDTO = s.EnrichUserDTO(ctx, userDTO, u.CompanyID, u.ID)
+
 	return AuthResponse{
 		AccessToken:           accessToken,
 		AccessTokenExpiresAt:  accessExp.Format(time.RFC3339),
 		RefreshToken:          rawRefresh,
 		RefreshTokenExpiresAt: refreshExp.Format(time.RFC3339),
-		User:                  mapUserRowToDTO(u.ID, u.CompanyID, u.Name, u.Email, u.Role, u.IsActive, u.IsDefaultManager, u.MustChangePassword, u.CreatedAt, u.UpdatedAt),
+		User:                  userDTO,
 	}, nil
 }
 
@@ -182,12 +192,15 @@ func (s *Service) Refresh(ctx context.Context, rawRefreshToken string) (AuthResp
 		return AuthResponse{}, err
 	}
 
+	userDTO := mapUserRowToDTO(u.ID, u.CompanyID, u.Name, u.Email, u.Role, u.IsActive, u.IsDefaultManager, u.MustChangePassword, u.CreatedAt, u.UpdatedAt)
+	userDTO = s.EnrichUserDTO(ctx, userDTO, u.CompanyID, u.ID)
+
 	return AuthResponse{
 		AccessToken:           accessToken,
 		AccessTokenExpiresAt:  accessExp.Format(time.RFC3339),
 		RefreshToken:          newRawRefresh,
 		RefreshTokenExpiresAt: refreshExp.Format(time.RFC3339),
-		User:                  mapUserRowToDTO(u.ID, u.CompanyID, u.Name, u.Email, u.Role, u.IsActive, u.IsDefaultManager, u.MustChangePassword, u.CreatedAt, u.UpdatedAt),
+		User:                  userDTO,
 	}, nil
 }
 
@@ -316,7 +329,34 @@ func (s *Service) UpdateOwnProfile(ctx context.Context, userID pgtype.UUID, name
 		return UserDTO{}, err
 	}
 
-	return mapUserRowToDTO(updated.ID, updated.CompanyID, updated.Name, updated.Email, updated.Role, updated.IsActive, updated.IsDefaultManager, updated.MustChangePassword, updated.CreatedAt, updated.UpdatedAt), nil
+	dto := mapUserRowToDTO(updated.ID, updated.CompanyID, updated.Name, updated.Email, updated.Role, updated.IsActive, updated.IsDefaultManager, updated.MustChangePassword, updated.CreatedAt, updated.UpdatedAt)
+	return s.EnrichUserDTO(ctx, dto, updated.CompanyID, updated.ID), nil
+}
+
+func (s *Service) EnrichUserDTO(ctx context.Context, dto UserDTO, companyID, userID pgtype.UUID) UserDTO {
+	if dto.Role != RoleTechnician || !companyID.Valid {
+		return dto
+	}
+	mgrRows, err := s.queries.ListManagersByTechnician(ctx, db.ListManagersByTechnicianParams{
+		CompanyID:    companyID,
+		TechnicianID: userID,
+	})
+	if err != nil {
+		return dto
+	}
+	managers := make([]ResponsibleManagerDTO, 0, len(mgrRows))
+	for _, m := range mgrRows {
+		if !m.IsActive {
+			continue
+		}
+		managers = append(managers, ResponsibleManagerDTO{
+			ID:    FormatUUID(m.ID),
+			Name:  m.Name,
+			Email: m.Email,
+		})
+	}
+	dto.ResponsibleManagers = managers
+	return dto
 }
 
 func NormalizeAndValidateEmail(raw string) string {

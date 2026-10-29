@@ -6,6 +6,7 @@ import 'package:thermoscan/core/theme/app_typography.dart';
 import 'package:thermoscan/core/widgets/app_buttons.dart';
 import 'package:thermoscan/core/widgets/status_chips.dart';
 import 'package:thermoscan/core/widgets/top_app_bar.dart';
+import 'package:thermoscan/features/auth/presentation/auth_controller.dart';
 import 'package:thermoscan/features/users/domain/user_models.dart';
 import 'package:thermoscan/features/users/presentation/user_action_dialogs.dart';
 import 'package:thermoscan/features/users/presentation/users_controller.dart';
@@ -54,6 +55,7 @@ class _CompanyUsersScreenState extends ConsumerState<CompanyUsersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = ref.watch(authControllerProvider).user;
     final usersAsync = ref.watch(companyUsersProvider);
 
     return Scaffold(
@@ -222,8 +224,11 @@ class _CompanyUsersScreenState extends ConsumerState<CompanyUsersScreen> {
                       separatorBuilder: (_, _) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final item = filtered[index];
+                        final isCurrentUser =
+                            currentUser != null && item.id == currentUser.id;
                         return _TeamUserCard(
                           user: item,
+                          isCurrentUser: isCurrentUser,
                           onManageManagers: item.isTechnician
                               ? () => showTechnicianManagersDialog(
                                     context: context,
@@ -298,12 +303,14 @@ class _FilterChipButton extends StatelessWidget {
 class _TeamUserCard extends StatelessWidget {
   const _TeamUserCard({
     required this.user,
+    this.isCurrentUser = false,
     this.onManageManagers,
     this.onResetPassword,
     this.onToggleStatus,
   });
 
   final CompanyUser user;
+  final bool isCurrentUser;
   final VoidCallback? onManageManagers;
   final VoidCallback? onResetPassword;
   final VoidCallback? onToggleStatus;
@@ -315,7 +322,10 @@ class _TeamUserCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(
+          color: isCurrentUser ? AppColors.primary : AppColors.border,
+          width: isCurrentUser ? 1.5 : 1.0,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,89 +333,99 @@ class _TeamUserCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: user.isActive
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  user.initials,
-                  style: AppTypography.body.copyWith(
-                    color: AppColors.surface,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      user.name,
-                      style: AppTypography.body.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            user.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.body.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        if (isCurrentUser) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'You',
+                              style: AppTypography.caption.copyWith(
+                                fontSize: 11,
+                                color: AppColors.surface,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     const SizedBox(height: 2),
                     Text(
                       user.email,
                       style: AppTypography.bodySmall,
                     ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        RoleChip(role: user.role),
-                        StatusChip(isActive: user.isActive),
-                        if (user.isDefaultManager)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.background,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppColors.border),
-                            ),
-                            child: Text(
-                              'Default',
-                              style: AppTypography.caption.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        if (user.mustChangePassword)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.warningBackground,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppColors.warningBorder),
-                            ),
-                            child: Text(
-                              'Temp Password',
-                              style: AppTypography.caption.copyWith(
-                                color: AppColors.warning,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
+              StatusChip(isActive: user.isActive),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              RoleChip(role: user.role),
+              if (user.isDefaultManager)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Text(
+                    'Default',
+                    style: AppTypography.caption.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              if (user.mustChangePassword)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.warningBackground,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.warningBorder),
+                  ),
+                  child: Text(
+                    'Temp Password',
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.warning,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
             ],
           ),
           if (user.isTechnician) ...[

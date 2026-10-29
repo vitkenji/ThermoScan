@@ -129,6 +129,17 @@ class AuthController extends StateNotifier<AuthState> {
     );
   }
 
+  Future<void> refreshProfile() async {
+    try {
+      final me = await repository.getMe();
+      if (state.isAuthenticated) {
+        state = AuthState.authenticated(me);
+      }
+    } catch (_) {
+      // Keep current cached user if background refresh fails
+    }
+  }
+
   Future<AuthUser> updateOwnProfile({
     required String name,
     required String email,

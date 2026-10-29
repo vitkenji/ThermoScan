@@ -359,25 +359,6 @@ class _ClientCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: client.isActive
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  client.initials,
-                  style: AppTypography.body.copyWith(
-                    color: AppColors.surface,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -393,37 +374,38 @@ class _ClientCard extends StatelessWidget {
                       client.email,
                       style: AppTypography.bodySmall,
                     ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        RoleChip(role: client.role),
-                        StatusChip(isActive: client.isActive),
-                        if (client.mustChangePassword)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.warningBackground,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppColors.warningBorder),
-                            ),
-                            child: Text(
-                              'Temp Password',
-                              style: AppTypography.caption.copyWith(
-                                color: AppColors.warning,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
+              StatusChip(isActive: client.isActive),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              RoleChip(role: client.role),
+              if (client.mustChangePassword)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.warningBackground,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.warningBorder),
+                  ),
+                  child: Text(
+                    'Temp Password',
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.warning,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 12),

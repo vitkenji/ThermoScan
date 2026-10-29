@@ -140,7 +140,8 @@ func (h *Handler) handleGetMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpjson.WriteJSON(w, http.StatusOK, principal.ToDTO())
+	dto := h.service.EnrichUserDTO(r.Context(), principal.ToDTO(), principal.CompanyID, principal.ID)
+	httpjson.WriteJSON(w, http.StatusOK, dto)
 }
 
 type changePasswordRequest struct {
