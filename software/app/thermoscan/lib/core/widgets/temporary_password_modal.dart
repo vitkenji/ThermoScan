@@ -7,11 +7,10 @@ import 'package:thermoscan/core/widgets/app_buttons.dart';
 
 Future<void> showTemporaryPasswordModal({
   required BuildContext context,
-  required String title,
+  String title = 'Temporary Password',
   required String userName,
   required String userEmail,
   required String temporaryPassword,
-  String? subtitle,
 }) {
   return showDialog<void>(
     context: context,
@@ -21,7 +20,6 @@ Future<void> showTemporaryPasswordModal({
       userName: userName,
       userEmail: userEmail,
       temporaryPassword: temporaryPassword,
-      subtitle: subtitle,
     ),
   );
 }
@@ -32,14 +30,12 @@ class _TemporaryPasswordDialog extends StatefulWidget {
     required this.userName,
     required this.userEmail,
     required this.temporaryPassword,
-    this.subtitle,
   });
 
   final String title;
   final String userName;
   final String userEmail;
   final String temporaryPassword;
-  final String? subtitle;
 
   @override
   State<_TemporaryPasswordDialog> createState() =>
@@ -62,86 +58,105 @@ class _TemporaryPasswordDialogState extends State<_TemporaryPasswordDialog> {
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 24),
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              width: 52,
-              height: 52,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 color: AppColors.primarySoft.withValues(alpha: 0.45),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.border),
               ),
               child: const Icon(
                 Icons.vpn_key_outlined,
                 color: AppColors.primary,
-                size: 28,
+                size: 22,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Text(
               widget.title,
               textAlign: TextAlign.center,
               style: AppTypography.h3,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
-              widget.subtitle ??
-                  'Share this temporary password with ${widget.userName} (${widget.userEmail}). It is shown only once and must be changed on first login.',
+              '${widget.userName} • ${widget.userEmail}',
               textAlign: TextAlign.center,
-              style: AppTypography.bodySmall,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: AppTypography.caption,
             ),
             const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: SelectableText(
-                widget.temporaryPassword,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.robotoMono(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
-                  letterSpacing: 1.1,
-                ),
-              ),
-            ),
-            if (_copied) ...[
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.check_circle,
-                    size: 16,
-                    color: AppColors.success,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Temporary password copied to clipboard',
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.success,
-                      fontWeight: FontWeight.w600,
+            // Monospace password box with integrated Copy button (prototype_1 style)
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    alignment: Alignment.centerLeft,
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: SelectableText(
+                      widget.temporaryPassword,
+                      maxLines: 1,
+                      style: GoogleFonts.robotoMono(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                        letterSpacing: 0.8,
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ],
-            const SizedBox(height: 20),
-            SecondaryButton(
-              label: _copied ? 'Copy Again' : 'Copy Password',
-              icon: Icons.content_copy_outlined,
-              onPressed: _copyToClipboard,
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  height: 48,
+                  width: 48,
+                  child: OutlinedButton(
+                    onPressed: _copyToClipboard,
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      backgroundColor: _copied
+                          ? AppColors.successBackground
+                          : AppColors.surface,
+                      side: BorderSide(
+                        color:
+                            _copied ? AppColors.successBorder : AppColors.border,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Icon(
+                      _copied ? Icons.check : Icons.content_copy_outlined,
+                      size: 20,
+                      color: _copied ? AppColors.success : AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 10),
+            Text(
+              _copied
+                  ? 'Copied to clipboard'
+                  : 'Shown once • Must be changed on first login',
+              textAlign: TextAlign.center,
+              style: AppTypography.caption.copyWith(
+                color: _copied ? AppColors.success : AppColors.textSecondary,
+                fontWeight: _copied ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+            const SizedBox(height: 18),
             PrimaryButton(
               label: 'Done',
               onPressed: () => Navigator.of(context).pop(),

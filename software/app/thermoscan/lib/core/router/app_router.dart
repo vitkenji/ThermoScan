@@ -6,6 +6,8 @@ import 'package:thermoscan/features/auth/presentation/login_screen.dart';
 import 'package:thermoscan/features/auth/presentation/mandatory_password_change_screen.dart';
 import 'package:thermoscan/features/auth/presentation/splash_screen.dart';
 import 'package:thermoscan/features/companies/presentation/companies_home_screen.dart';
+import 'package:thermoscan/features/companies/presentation/company_details_screen.dart';
+import 'package:thermoscan/features/companies/presentation/create_company_screen.dart';
 import 'package:thermoscan/features/home/presentation/phase1_role_home_screen.dart';
 import 'package:thermoscan/features/profile/presentation/profile_screen.dart';
 import 'package:thermoscan/features/users/presentation/manager_admin_home_screen.dart';
@@ -85,6 +87,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin/companies',
         builder: (context, state) => const CompaniesHomeScreen(),
+      ),
+      GoRoute(
+        path: '/admin/companies/new',
+        builder: (context, state) => const CreateCompanyScreen(),
+      ),
+      GoRoute(
+        path: '/admin/companies/:companyId',
+        builder: (context, state) {
+          final companyId = state.pathParameters['companyId'] ?? '';
+          return CompanyDetailsScreen(companyId: companyId);
+        },
       ),
       GoRoute(
         path: '/manager',

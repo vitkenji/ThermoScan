@@ -8,7 +8,7 @@ import 'package:thermoscan/core/widgets/thermoscan_logo.dart';
 class ThermoScanAppBar extends StatelessWidget implements PreferredSizeWidget {
   const ThermoScanAppBar({
     super.key,
-    required this.title,
+    this.title = 'ThermoScan',
     this.role,
     this.showBack = false,
     this.onBack,
@@ -41,50 +41,64 @@ class ThermoScanAppBar extends StatelessWidget implements PreferredSizeWidget {
           height: 56,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                if (showBack) ...[
-                  IconButton(
-                    onPressed: onBack ?? () => context.pop(),
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: AppColors.primary,
-                      size: 22,
-                    ),
-                    tooltip: 'Back',
+            child: showBack
+                ? Row(
+                    children: [
+                      IconButton(
+                        onPressed: onBack ?? () => context.pop(),
+                        icon: const Icon(
+                          Icons.arrow_back,
+                          color: AppColors.primary,
+                          size: 22,
+                        ),
+                        tooltip: 'Back',
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          title,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.h3.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      ?trailingAction,
+                    ],
+                  )
+                : Row(
+                    children: [
+                      const ThermoScanLogoIcon(size: 24),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'ThermoScan',
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.h3.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      if (role != null) ...[
+                        RoleChip(role: role!, compact: true),
+                        const SizedBox(width: 4),
+                      ],
+                      if (trailingAction != null)
+                        trailingAction!
+                      else if (showProfileAction)
+                        IconButton(
+                          onPressed: () => context.push('/profile'),
+                          icon: const Icon(
+                            Icons.account_circle_outlined,
+                            color: AppColors.primary,
+                            size: 24,
+                          ),
+                          tooltip: 'Profile & Settings',
+                        ),
+                    ],
                   ),
-                  const SizedBox(width: 4),
-                ],
-                const ThermoScanLogoIcon(size: 22),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    title,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.h3.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                if (role != null) ...[
-                  RoleChip(role: role!, compact: true),
-                  const SizedBox(width: 6),
-                ],
-                if (trailingAction != null)
-                  trailingAction!
-                else if (showProfileAction)
-                  IconButton(
-                    onPressed: () => context.push('/profile'),
-                    icon: const Icon(
-                      Icons.account_circle_outlined,
-                      color: AppColors.primary,
-                      size: 24,
-                    ),
-                    tooltip: 'Profile & Settings',
-                  ),
-              ],
-            ),
           ),
         ),
       ),
