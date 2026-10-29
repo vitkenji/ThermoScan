@@ -5,9 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:thermoscan/core/config/app_config.dart';
 import 'package:thermoscan/core/storage/token_storage.dart';
 
+final baseUrlProvider = StateProvider<String>((ref) {
+  return AppConfig.apiBaseUrl;
+});
+
 final dioProvider = Provider<Dio>((ref) {
   final tokenStorage = ref.watch(tokenStorageProvider);
-  return createConfiguredDio(tokenStorage: tokenStorage);
+  final baseUrl = ref.watch(baseUrlProvider);
+  return createConfiguredDio(tokenStorage: tokenStorage, baseUrl: baseUrl);
 });
 
 Dio createConfiguredDio({

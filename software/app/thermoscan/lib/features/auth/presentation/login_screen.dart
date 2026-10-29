@@ -1,5 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:thermoscan/core/config/app_config.dart';
+import 'package:thermoscan/core/network/api_client.dart';
 import 'package:thermoscan/core/network/api_exception.dart';
 import 'package:thermoscan/core/theme/app_colors.dart';
 import 'package:thermoscan/core/theme/app_typography.dart';
@@ -91,7 +94,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 8),
-                        const ThermoScanBrandMark(iconSize: 28, fontSize: 22),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const ThermoScanBrandMark(iconSize: 28, fontSize: 22),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.settings_ethernet_outlined,
+                                color: AppColors.textSecondary,
+                                size: 24,
+                              ),
+                              tooltip: 'Server Connection Settings',
+                              onPressed: () => _showServerSettingsDialog(context),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 28),
                         Text(
                           'Field Diagnostics Login',
@@ -245,6 +262,159 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _showServerSettingsDialog(BuildContext context) async {
+    final currentUrl = ref.read(baseUrlProvider);
+    final ctrl = TextEditingController(text: currentUrl);
+    var testing = false;
+    String? testResult;
+    bool? testSuccess;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogCtx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: AppColors.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  const Icon(Icons.dns_outlined, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  Text('Server Host', style: AppTypography.h3),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Configure backend API address (e.g. Wi-Fi IP changes).',
+                    style: AppTypography.bodySmall,
+                  ),
+                  const SizedBox(height: 14),
+                  AppTextField(
+                    label: 'API Base URL',
+                    controller: ctrl,
+                    hintText: 'http://10.178.129.58:8080/api/v1',
+                  ),
+                  if (testResult != null) ...[
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Icon(
+                          testSuccess == true
+                              ? Icons.check_circle_outline
+                              : Icons.error_outline,
+                          size: 16,
+                          color: testSuccess == true
+                              ? AppColors.success
+                              : AppColors.error,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            testResult!,
+                            style: AppTypography.caption.copyWith(
+                              color: testSuccess == true
+                                  ? AppColors.success
+                                  : AppColors.error,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    ctrl.text = AppConfig.defaultApiBaseUrl;
+                    setDialogState(() {
+                      testResult = null;
+                      testSuccess = null;
+                    });
+                  },
+                  child: const Text('Reset Default'),
+                ),
+                TextButton(
+                  onPressed: testing
+                      ? null
+                      : () async {
+                          setDialogState(() {
+                            testing = true;
+                            testResult = null;
+                          });
+                          try {
+                            final testUrl = ctrl.text.trim();
+                            final healthUrl = testUrl.replaceAll(
+                              RegExp(r'/api/v1/?$'),
+                              '/health',
+                            );
+                            final dio = Dio(
+                              BaseOptions(
+                                connectTimeout: const Duration(seconds: 4),
+                              ),
+                            );
+                            final res = await dio.get<dynamic>(healthUrl);
+                            setDialogState(() {
+                              testing = false;
+                              testSuccess = (res.statusCode == 200);
+                              testResult = testSuccess!
+                                  ? 'Connected successfully!'
+                                  : 'Server replied with status ${res.statusCode}';
+                            });
+                          } catch (e) {
+                            setDialogState(() {
+                              testing = false;
+                              testSuccess = false;
+                              testResult = 'Connection failed. Check IP & Wi-Fi.';
+                            });
+                          }
+                        },
+                  child: testing
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Test Connection'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () async {
+                    final newUrl = ctrl.text.trim();
+                    if (newUrl.isNotEmpty) {
+                      await AppConfig.setBaseUrl(newUrl);
+                      ref.read(baseUrlProvider.notifier).state = newUrl;
+                    }
+                    if (context.mounted) {
+                      Navigator.of(dialogCtx).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Server URL set to: $newUrl'),
+                          backgroundColor: AppColors.success,
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }
