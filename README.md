@@ -11,7 +11,3 @@ A mobile app lets users view measurements and monitor the system. The embedded d
 - `backend/` — Cloud API and data storage.
 - `hardware/` — Electrical schematics, PCB files, and 3D models.
 - `docs/` — Requirements, architecture, and communication documentation.
-
-## Status
-
-Under development.

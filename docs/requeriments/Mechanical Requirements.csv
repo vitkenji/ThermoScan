@@ -1,0 +1,37 @@
+﻿ID,Droppable,Optional,Requirement,Status,Type
+"MFR02 ",,Required,The system shall incorporate a linear rail mechanism with a sliding carriage.,Not started,Functional
+MNFR18,,Required,The resting position of the sliding carriage shall be located at a minimum horizontal distance of 14cm from the panel edge.,Not started,Non-Functional
+MFR04,,Required,The sliding carriage shall mount and mechanically couple the thermal camera and the water nozzle.,Not started,Functional
+MFR08,,Required,The system shall provide independent tilt mechanisms for the cleaning nozzle.,Not started,Functional
+MFR01,,Required,"The base structure shall provide mounting points for the photovoltaic module, linear rail assembly, water pump, and electronic enclosures.",Not started,Functional
+MNFR07,,Required,The water hose shall have a maximum length of 150 cm and minimum length of 50 cm,Not started,Non-Functional
+MFR14,,Optional,The primary base structure shall allow for manual adjustment of its inclination angle to simulate different solar panel mounting setups.,Not started,Functional
+MAR01,,Required,The system shall NOT include mechanisms for physical (brush or wiper) contact cleaning; cleaning is limited to water-jet spraying only.,Not started,Anti-Requirement
+MAR02,,Required,The reservoir and pump assembly shall NOT include automatic refilling from an external water source,Not started,Anti-Requirement
+MNFR14,,Required,The tilt mechanisms for both the cleaning nozzle and the thermal camera shall be actuated exclusively by servo motors.,Not started,Non-Functional
+MAR03,,Required,The system shall NOT incorporate any cooling mechanisms intended to lower the temperature of a detected hotspot.,Not started,Anti-Requirement
+MNFR01,,Required,"The base structure shall measure at most 100 cm in length, 40 cm in width, and 40 cm in height.",Not started,Non-Functional
+MNFR02,,Required,The primary base structure shall be constructed from acrylic or MDF/Wood.,Not started,Non-Functional
+"MFR03 ",,Required,The sliding carriage shall be driven by a stepper motor coupled to a timing belt to enable horizontal translation across the panel.,Not started,Functional
+"MNFR03 ",,Required,The linear rail mechanism shall utilize a V-slot profile.,Not started,Non-Functional
+"MNFR04 ",,Required,The linear rail shall have a minimum length of 70 cm.,Not started,Non-Functional
+MNFR05,,Required,The motor driving the sliding carriage shall be a NEMA 17 stepper motor.,Not started,Non-Functional
+MFR05,,Required,The system shall route the water hose to accommodate the full travel of the carriage along the rail.,Not started,Functional
+MNFR06,,Required,The water hose connected to the nozzle shall be made of flexible silicone.,Not started,Non-Functional
+MNFR08,,Required,The mechanical mount coupling the thermal camera and water nozzle shall be custom 3D-printed.,Not started,Non-Functional
+"MNFR09 ",,Required,The hose routing design shall prevent tangling or kinking during the full horizontal travel of the carriage.,Not started,Non-Functional
+MFR10,,Required,The nozzle tilt mechanism shall actuate the nozzle vertically to sweep the water jet across the full vertical length of a targeted continuous strip on the solar panel.,Not started,Functional
+MFR11,,Optional,The camera tilt mechanism shall actuate the thermal camera vertically to ensure its field of view (FOV) fully covers the targeted continuous strip for accurate thermal measurement and hotspot detection.,Not started,Functional
+MNFR15,,Required,The water flow path shall utilize a flexible hose to connect the base-mounted reservoir to the movable carriage,Not started,Non-Functional
+MNFR16,,Optional,The pump/valve assembly shall limit the jet pressure at the nozzle to a range of 2 bar.,Not started,Non-Functional
+MNFR17,,Required,The pump/valve assembly shall limit the water flow rate at the nozzle to 30 mL/s.,Not started,Non-Functional
+MNFR12,,Optional,The water reservoir opening must be physically accessible for refilling without requiring the removal or disassembly of any other system component.,Not started,Non-Functional
+MFR12,,Required,The linear rail mechanism shall provide a resting zone for the sliding carriage outside the active area of the solar panel.,Not started,Functional
+MNFR13,,Optional,The water reservoir shall be mechanically fixed to the base of the structure,Not started,Non-Functional
+MNFR10,,Required,The water reservoir shall have a volumetric capacity of 2 liters.,Not started,Non-Functional
+MNFR11,,Required,The water reservoir shall be manufactured from acrylic or plastic material.,Not started,Non-Functional
+MFR07,,Required,The water reservoir shall feature a removable lid to allow for manual water refills.,Not started,Functional
+MFR06,,Required,The system shall transport water from a water reservoir to a cleaning nozzle mounted on the carriage,Not started,Functional
+MFR09,,Optional,The system shall provide independent tilt mechanisms for the thermal camera.,Not started,Functional
+MFR13,,Required,"The thermal camera shall be mounted perpendicular to the photovoltaic panel surface, at a distance of 12–15 cm from the panel.",Not started,Functional
+MNFR19,,Required,The linear rail mechanism shall be mounted along the top section of the primary base structure.,Not started,Non-Functional

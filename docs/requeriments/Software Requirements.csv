@@ -1,0 +1,70 @@
+﻿ID,Droppable,Optional,Requirement,Requires Revision,Status,Type
+SNFR03,Droppable,Required,The mobile app shall obtain the panel azimuth and tilt angle using the smartphone magnetometer and accelerometer.,,Not started,Non-Functional
+SFR37,,Required,"After the normal conclusion of a cleaning operation, the embed software shall schedule a verification thermal measurement to be executed at least thirty minutes after the end of the operation.",,Not started,Functional
+SNFR01,,Required,"Panel dimensions and inter-panel distance shall be entered in centimeters, while the number of panels in the string shall be entered as a positive integer.",,Not started,Non-Functional
+SNFR02,Droppable,Required,"Latitude and longitude shall be stored in decimal degrees, and elevation shall be stored in meters relative to sea level.",,Not started,Non-Functional
+SNFR11,,Required,The mobile app shall express the level as a percentage of the registered nominal capacity.,,Not started,Non-Functional
+SFR35,,Required,"Upon classification of a hot-spot anomaly, the embed software shall schedule a localized cleaning operation for the measurement zone in which the anomaly was detected.",,Not started,Functional
+SNFR04,Droppable,Required,"The panel azimuth shall be stored as an angle from 0° to less than 360° relative to true north, and the panel tilt angle shall be stored as an angle from 0° to 90° relative to the horizontal plane.",,Not started,Non-Functional
+SAR01,,Optional,The embed software shall NOT implement machine-learning-based image analysis; hotspot detection is limited to histogram/threshold comparison against baseline temperature.,,Not started,Functional
+SFR01,,Required,"The cloud, mobile app and embed software, shall identify the module with the MAC address of the corresponding embedded device for any identification needed.",,Not started,Functional
+"SFR02 ",,Required,"The mobile app shall allow the user to register the photovoltaic panel configuration during the initial configuration, which includes the length and width of each panel, the number of panels connected in series in the array, the distance between adjacent panels, minimum solar angle threshold and module identification.",,Not started,Functional
+SFR03,Droppable,Required,"During the initial installation procedure, the mobile app shall obtain the latitude, longitude, and elevation of the photovoltaic module installation site through the smartphone’s location services.",,Not started,Functional
+SFR04,Droppable,Required,"During the initial installation procedure, the mobile app shall instruct the technician to place the smartphone flat and aligned with the photovoltaic module surface so it can obtain the panel azimuth and tilt angle.",,Not started,Functional
+SFR05,,Required,"The mobile app shall display the acquired installation data, for technician confirmation and allow the technician to manually modify each value before saving the module’s properties. ",,Not started,Functional
+SFR06,,Required,"The mobile app shall send the validated module properties to the cloud. The stored module configuration shall include the module identifier, embedded-device MAC address, photovoltaic array properties, installation latitude, longitude, elevation, panel azimuth, panel tilt, configuration timestamp, and the acquisition source of each orientation value.",,Not started,Functional
+SFR07,,Required,"The embed software shall perform thermal acquisitions along the panel’s usable X-axis length, associating each acquisition with the mobile module’s current X-axis position until full panel coverage is achieved.",,Not started,Functional
+SFR11,,Required,"When multiple panels are arranged along the X-axis, the embed software shall calculate each panel’s start and end coordinates using its length and the distance between adjacent panels.",,Not started,Functional
+SFR12,Droppable,Required,"The system shall schedule each module’s inspections according to its configured interval: 1, 7, 15, or a custom number of days not less than 1.",,Not started,Functional
+SAR02,,Required,The module will not make scans or calculate scan time intervals if module’s properties are not gathered from the cloud.,,Not started,Anti-Requirement
+SFR13,Droppable,Required,"Each day, the embed software shall calculate the solar incidence score and identify continuous time intervals in which the score meets or exceeds the configured minimum threshold.",,Not started,Functional
+SFR14,Droppable,Required,The embedded sofware shall retain cloud unsent or failed to send data measurements in non-volatile memory.,,Not started,Functional
+SFR21,,Required,The mobile app shall allow a Manager or Technician user with viewing permission to update the module-specific minimum solar threshold angle.,,Not started,Functional
+SFR15,,Required,"The system shall have a System Administrator role, not associated with any company, which shall be the only role authorized to create companies.",,Not started,Functional
+SFR24,,Optional,"The mobile app shall allow a Manager to grant or revoke a Technician’s viewing permission for any photovoltaic module associated with the same company, including modules originally installed by that Technician.",,Not started,Functional
+SFR23,,Required,The mobile app shall display to a Manager user a list containing all photovoltaic modules associated with the Manager’s company.,,Not started,Functional
+SFR22,,Required,The mobile app shall display to a Technician user a list containing all photovoltaic modules for which the Technician has been granted viewing permission.,,Not started,Functional
+SFR20,,Required,"The mobile app shall only allow a Technician user to initiate the installation of a module through the mobile application. ",,Not started,Functional
+SFR19,,Required,The mobile app shall allow a Manager to register Technician users within the same company and assign the new created user one or more responsible Managers.,,Not started,Functional
+SFR18,,Required,The mobile app shall allow a Manager to register additional Manager users within the same company.,,Not started,Functional
+SNFR10,,Required,"The mobile app shall authenticate Managers, Technicians, and Clients using unique email addresses and passwords.",,Not started,Non-Functional
+SNFR09,Droppable,Required,The score shall be defined as the cosine of the angle between the solar direction vector and the normal vector of the photovoltaic panel surface.,,Not started,Non-Functional
+SNFR08,,Required,"On initialization, the embed software shall request, with exponential backoff in case of failure, module’s properties to the cloud.",,Not started,Non-Functional
+SFR16,,Required,"Created companies shall always have a default Manager user, who cannot be deleted.",,Not started,Functional
+SFR17,,Required,"The mobile app shall authenticate the user before granting access to system functions and shall establish an authenticated session associated with the user identifier, company identifier, and assigned role.",,Not started,Functional
+SFR31,,Required,The embedded software shall read the reservoir level immediately before and immediately after the conclusion of each cleaning operation.,,Not started,Functional
+SFR08,,Required,"The embed software shall move the mobile module by a fixed 2 cm step along the X-axis between thermal acquisitions, providing a 60% overlap over the predefined 5 cm acquisition region. The 5 cm region shall be internally defined based on the MLX90640ESF-BAA field of view and shall not be configurable by the user.",,Not started,Functional
+SFR32,,Required,The embed software shall send to the cloud every acquired water level with its timestamp for historical consultation.,,Not started,Functional
+SFR33,,Required,"When the reservoir level falls to 20% or below, the system shall notify assigned Clients and authorized Technicians.",,Not started,Functional
+SFR34,,Required,"When the reservoir level is below five percent of nominal capacity, the embedded software shall refuse the cleaning operation and shall save in the cloud the refusal with the reason reservoir depleted.",,Not started,Functional
+SFR43,,Required,The cloud shall allow each module to be associated with one or more responsible managers and shall not allow it to remain without at least one responsible manager.,,Not started,Functional
+SFR42,,Required,"If a scheduled inspection fails to produce a valid reading, the system shall record the failure and notify assigned Clients, responsible Managers, and authorized Technicians.",,Not started,Functional
+SFR41,,Optional,The mobile app shall provide the Manager user a pending maintenance list from modules associated with notifications.,,Not started,Functional
+SNFR12,,Required,The mobile app shall use the native mobile notification system for notifications.,,Not started,Non-Functional
+SFR09,,Required,"When a hotspot is detected, the embed software shall store its associated X-axis position and use each recorded position to place the water nozzle for localized cleaning.",,Not started,Functional
+SNFR05,,Required,The embed software shall calculate the panel baseline temperature as the median temperature of valid thermal readings from the current acquisition sequence.,,Not started,Non-Functional
+SNFR06,,Required,The embed software shall classify a thermal region as a hotspot candidate when its temperature is greater than or equal to the panel baseline temperature plus the configured temperature-difference threshold of 10ºC,,Not started,Non-Functional
+SNFR07,,Required,The embed software shall confirm a hotspot only when the same thermal anomaly is detected in at least two consecutive thermal acquisitions.,,Not started,Non-Functional
+SFR36,,Required,"The embed software shall store the affected measurement zone, timestamps, and the final status of the operation after new scan, associated with the event identifier of the originating anomaly.",,Not started,Functional
+SFR38,,Required,"When no anomaly is detected in the region of the original detection, the embed software shall close the event with the status resolved",,Not started,Functional
+SFR40,,Required,"If the anomaly persists after cleaning, the system shall mark it unresolved and notify assigned Clients, responsible Managers, and authorized Technicians.",,Not started,Functional
+SFR30,,Required,"The module details screen shall display the cleaning history of the photovoltaic module, including the timestamp, target X-axis position, cleaning duration, estimated water volume, and post-cleaning verification result.",,Not started,Functional
+SFR29,,Required,"The module details screen shall display the measurement history of the photovoltaic module, including the timestamp, hotspot status, voltage, current, and instantaneous power of each measurement.",,Not started,Functional
+SFR28,,Required,The module details screen shall display the two-dimensional thermal map generated by the latest measurement when available.,,Not started,Functional
+SFR27,,Required,"The module details screen shall display the timestamp, temperature readings, hotspot status, voltage, current, instantaneous power, and cleaning status of the latest measurement.",,Not started,Functional
+SFR26,,Required,"The module details screen shall display the panel length, panel width, installation latitude, longitude, elevation, panel azimuth, panel tilt, and configured inspection interval.
+",,Not started,Functional
+SFR25,,Required,"The module details screen shall display the module identifier, installation technician, and current monitoring status.",,Not started,Functional
+SFR39,,Required,The embedded software shall not perform cleaning when the panel baseline temperature exceeds 60°C.,,Not started,Functional
+SFR10,,Required,"The embedded software shall achieve a minimum accuracy of 75% in the identification types of photovoltaic module anomalies, including hotspots, soiling, shading, and electrical faults, based on thermal and electrical measurement data.",,Not started,Functional
+SFR44,,Required,The mobile app shall allow a Manager to create and manage Clients within the Manager’s company from the home screen.,,Not started,Functional
+SFR45,,Required,Each Client shall belong to exactly one company and may be assigned zero or more modules from that company; each module may be assigned to multiple Clients.,,Not started,Functional
+SFR46,,Required,"Upon Client creation, the system shall generate an initial password, display it to the Manager only once, and require the Client to change it at first login.",,Not started,Functional
+SFR47,,Required,The mobile app shall allow a Client to view all details and history only for the modules assigned to that Client.,,Not started,Functional
+SFR48,,Optional,"The mobile app shall allow a Manager, a Technician with configuration permission, or an assigned Client to change a module’s inspection interval.",,Not started,Functional
+SFR49,,Optional,"The latest saved interval change shall apply; the system shall log its author, timestamp, previous value, and new value.",,Not started,Functional
+SFR50,,Optional,"After an interval change, the system shall recalculate the next inspection from the last completed inspection without starting an immediate scan. If no inspection exists, it shall use the next valid inspection window.",,Not started,Functional
+SFR51,Droppable,Required,The system shall email all Clients assigned to a module whenever its inspection interval changes.,,Not started,Functional
+SFR52,Droppable,Required,The mobile app shall allow authorized users to export the currently displayed module measurement as a PDF report containing the same data shown on the screen.,,Not started,Functional
+SFR53,Droppable,Required,The mobile app shall allow each Client to disable or re-enable operational email notifications separately for each assigned module; interval-change emails shall remain enabled.,,Not started,Functional
+SFR54,,Required,"The system must have 3 user roles: Managers, for installation company managers, Technicians, for company maintenance employees, and Clients for panel installation site owners.",,Not started,Non-Functional

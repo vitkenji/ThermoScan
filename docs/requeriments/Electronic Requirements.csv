@@ -1,0 +1,21 @@
+﻿ID,Droppable,Optional,Requirement,Status,Type
+EFR01,,Required,The system shall acquire thermal frames of the solar panel and process them to identify hotspots on the panel.,Not started,Functional
+EFR02,,Required,The system shall measure each photovoltaic panel voltage output (0–25 VDC range) with at least 9 bits of precision.,Not started,Functional
+EFR03,,Required,The system shall measure each photovoltaic panel current output (0–5 A range) with at least 9 bits of precision.,Not started,Functional
+EFR04,Droppable,Required,The system shall estimate each panel’s real-time power efficiency by comparing the measured instantaneous power against the panel’s rated power.,Not started,Functional
+ENFR04,,Required,"The system shall transmit measurement data (temperature, voltage, current, power, status) to the cloud via a Wi-Fi connection.",Not started,Non-Functional
+ENFR06,,Required,"The system shall control the nozzle tilt servo via PWM signal, sweeping the angle from ~−60° to 0° over a duration of 3–5 seconds when a cleaning cycle is triggered.",Not started,Non-Functional
+ENFR08,,Required,The water pump shall be driven via a MOSFET module or relay module and activated for a defined duration (3–5 seconds) upon hotspot confirmation.,Not started,Non-Functional
+EFR08,,Required,The system shall control the stepper motor to position the sensing/cleaning module at every panel strip in a linear motion.,Not started,Functional
+EFR05,,Required,"The system shall regulate and distribute power from a 12V 5A DC supply to the microcontroller, sensors, servos, and pump circuits.",Not started,Functional
+ENFR03,Droppable,Required,The instant voltage and current snapshots shall be taken every 15-30 minutes or before every cycle of hotspot detection and shall run for at least 60 seconds with at least 2 measurements per second.,Not started,Non-Functional
+ENFR02,,Required,The system shall use the INA219 module to capture voltage and current snapshots and connect to the main controller via I2C.,Not started,Non-Functional
+ENFR05,Droppable,Required,The system shall save non-volatile data in a MicroSD card though a reader module connected to the controller via SPI.,Not started,Non-Functional
+EFR07,Droppable,Required,"The electronic components (ESP32, power converters, drivers and switching modules) shall be housed in 3D-printed enclosures made of PETG, providing a degree of protection of at least IP54 according to IEC 60529.",Not started,Functional
+ENFR10,,Required,The system shall use the LM2596 module to stepdown the 12V bus to 5V.,Not started,Non-Functional
+ENFR07,,Optional,"The system shall control the camera tilt servo via PWM signal, sweeping the angle from ~−60° to 0° to ensure a proper FOV for the thermal frame capturing.",Not started,Non-Functional
+EFR06,Droppable,Required,The system shall include Normally Closed (NC) microswitches to serve as physical hardware limit failsafes.,Not started,Functional
+EFR09,Droppable,Required,"The system shall use an LED to represent its current state (idle, sensing, cleaning, no wi-fi connection, low water on reservoir).",Not started,Functional
+ENFR09,,Required,The water reservoir level shall be measured with the JSN-SR04T ultrassonic sensor.,Not started,Non-Functional
+ENFR01,,Required,The system shall use the MLX90640 thermal camera to capture thermal frames and send data to the microcontroller via I2C.,Not started,Non-Functional
+EFR10,,Required,Bench tests shall be done with a dimmer controlled by another ESP32 and a Halogen/LED lamp with at least 100W.,Not started,Functional
