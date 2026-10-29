@@ -15,7 +15,7 @@ import (
 )
 
 // BootstrapResult contains the outcome of the initial System Admin check.
-// TemporaryPassword is only populated when a new System Admin is created for the first time.
+// TemporaryPassword is only populated when a new System Admin is created or reset.
 type BootstrapResult struct {
 	Created           bool
 	Email             string
@@ -79,6 +79,58 @@ func EnsureSystemAdmin(ctx context.Context, q *db.Queries, name, bootstrapEmail 
 	return BootstrapResult{
 		Created:           true,
 		Email:             user.Email,
+		TemporaryPassword: tempPass,
+	}, nil
+}
+
+// ResetSystemAdminPassword generates a new one-time temporary password for the system_admin
+// identified by email, updates must_change_password = true, and revokes all existing sessions.
+func ResetSystemAdminPassword(ctx context.Context, q *db.Queries, email string, logger *slog.Logger) (BootstrapResult, error) {
+	normalizedEmail := strings.ToLower(strings.TrimSpace(email))
+	if normalizedEmail == "" {
+		return BootstrapResult{}, fmt.Errorf("bootstrap admin email is required")
+	}
+
+	u, err := q.GetUserByEmail(ctx, normalizedEmail)
+	if err != nil {
+		return BootstrapResult{}, fmt.Errorf("find system_admin %q: %w", normalizedEmail, err)
+	}
+	if u.Role != "system_admin" {
+		return BootstrapResult{}, fmt.Errorf("user %q is not a system_admin", normalizedEmail)
+	}
+
+	tempPass, err := generateTemporaryPassword(16)
+	if err != nil {
+		return BootstrapResult{}, fmt.Errorf("generate temporary password: %w", err)
+	}
+
+	hashBytes, err := bcrypt.GenerateFromPassword([]byte(tempPass), bcrypt.DefaultCost)
+	if err != nil {
+		return BootstrapResult{}, fmt.Errorf("hash temporary password: %w", err)
+	}
+
+	if _, err := q.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
+		ID:                 u.ID,
+		PasswordHash:       string(hashBytes),
+		MustChangePassword: true,
+	}); err != nil {
+		return BootstrapResult{}, fmt.Errorf("update system_admin password: %w", err)
+	}
+
+	if err := q.RevokeAllUserAuthSessions(ctx, u.ID); err != nil {
+		return BootstrapResult{}, fmt.Errorf("revoke system_admin sessions: %w", err)
+	}
+
+	if logger != nil {
+		logger.Info("system_admin password reset (save temporary password now; it will not be shown again)",
+			slog.String("email", u.Email),
+			slog.String("temporary_password", tempPass),
+		)
+	}
+
+	return BootstrapResult{
+		Created:           false,
+		Email:             u.Email,
 		TemporaryPassword: tempPass,
 	}, nil
 }

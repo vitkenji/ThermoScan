@@ -39,7 +39,10 @@ func TestEnsureSystemAdmin(t *testing.T) {
 	q := db.New(tx)
 
 	// Ensure clean state inside transaction
-	_, err = tx.Exec(ctx, "DELETE FROM users WHERE role = 'system_admin'")
+	_, err = tx.Exec(ctx, `
+		DELETE FROM auth_sessions WHERE user_id IN (SELECT id FROM users WHERE role = 'system_admin');
+		DELETE FROM users WHERE role = 'system_admin';
+	`)
 	if err != nil {
 		t.Fatalf("failed to clear system_admin users in tx: %v", err)
 	}

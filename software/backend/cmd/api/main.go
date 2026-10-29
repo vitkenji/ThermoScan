@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
+	"flag"
 	"log/slog"
 	"net/http"
 	"os"
@@ -11,16 +11,19 @@ import (
 	"syscall"
 	"time"
 
+	"backend/internal/auth"
 	"backend/internal/bootstrap"
 	"backend/internal/config"
 	"backend/internal/db"
+	"backend/internal/httpapi"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
+	resetAdmin := flag.Bool("reset-admin", false, "Reset the system_admin password to a new temporary password and exit")
+	flag.Parse()
+
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}))
@@ -56,7 +59,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	router := newRouter(pool)
+	if *resetAdmin {
+		if _, err := bootstrap.ResetSystemAdminPassword(startupCtx, queries, cfg.BootstrapAdminEmail, logger); err != nil {
+			logger.Error("failed to reset system_admin password", slog.String("error", err.Error()))
+			os.Exit(1)
+		}
+		return
+	}
+
+	tokens := auth.NewTokenManager(cfg.JWTSecret)
+	authService := auth.NewService(pool, tokens)
+	authHandler := auth.NewHandler(authService, queries, tokens)
+
+	router := httpapi.NewRouter(httpapi.Dependencies{
+		Pinger:      pool,
+		AuthHandler: authHandler,
+	})
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.APIPort,
@@ -84,45 +102,4 @@ func main() {
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		logger.Error("graceful shutdown failed", slog.String("error", err.Error()))
 	}
-}
-
-type dbPinger interface {
-	Ping(ctx context.Context) error
-}
-
-func newRouter(pinger dbPinger) http.Handler {
-	r := chi.NewRouter()
-
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(30 * time.Second))
-
-	healthHandler := func(w http.ResponseWriter, req *http.Request) {
-		ctx, cancel := context.WithTimeout(req.Context(), 3*time.Second)
-		defer cancel()
-
-		w.Header().Set("Content-Type", "application/json")
-		if pinger != nil {
-			if err := pinger.Ping(ctx); err != nil {
-				w.WriteHeader(http.StatusServiceUnavailable)
-				_ = json.NewEncoder(w).Encode(map[string]string{
-					"status": "unavailable",
-				})
-				return
-			}
-		}
-
-		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(map[string]string{
-			"status": "ok",
-		})
-	}
-
-	r.Get("/health", healthHandler)
-	r.Route("/api/v1", func(r chi.Router) {
-		r.Get("/health", healthHandler)
-	})
-
-	return r
 }
