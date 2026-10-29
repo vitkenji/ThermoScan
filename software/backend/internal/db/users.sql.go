@@ -128,6 +128,48 @@ func (q *Queries) GetCompanyUserByID(ctx context.Context, arg GetCompanyUserByID
 	return i, err
 }
 
+const getCompanyUserByIDForUpdate = `-- name: GetCompanyUserByIDForUpdate :one
+SELECT
+    id,
+    company_id,
+    name,
+    email,
+    password_hash,
+    role,
+    is_active,
+    is_default_manager,
+    must_change_password,
+    created_at,
+    updated_at
+FROM users
+WHERE company_id = $1 AND id = $2
+FOR UPDATE
+`
+
+type GetCompanyUserByIDForUpdateParams struct {
+	CompanyID pgtype.UUID
+	ID        pgtype.UUID
+}
+
+func (q *Queries) GetCompanyUserByIDForUpdate(ctx context.Context, arg GetCompanyUserByIDForUpdateParams) (User, error) {
+	row := q.db.QueryRow(ctx, getCompanyUserByIDForUpdate, arg.CompanyID, arg.ID)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CompanyID,
+		&i.Name,
+		&i.Email,
+		&i.PasswordHash,
+		&i.Role,
+		&i.IsActive,
+		&i.IsDefaultManager,
+		&i.MustChangePassword,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT
     u.id,

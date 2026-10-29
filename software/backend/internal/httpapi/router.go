@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"backend/internal/auth"
+	"backend/internal/company"
 	"backend/internal/httpjson"
+	"backend/internal/user"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -17,8 +19,10 @@ type DBPinger interface {
 }
 
 type Dependencies struct {
-	Pinger      DBPinger
-	AuthHandler *auth.Handler
+	Pinger         DBPinger
+	AuthHandler    *auth.Handler
+	CompanyHandler *company.Handler
+	UserHandler    *user.Handler
 }
 
 func NewRouter(deps Dependencies) http.Handler {
@@ -53,6 +57,12 @@ func NewRouter(deps Dependencies) http.Handler {
 
 		if deps.AuthHandler != nil {
 			deps.AuthHandler.RegisterRoutes(r)
+		}
+		if deps.CompanyHandler != nil {
+			deps.CompanyHandler.RegisterRoutes(r)
+		}
+		if deps.UserHandler != nil {
+			deps.UserHandler.RegisterRoutes(r)
 		}
 	})
 

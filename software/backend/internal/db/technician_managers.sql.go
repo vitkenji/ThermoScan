@@ -62,6 +62,22 @@ func (q *Queries) CountManagersForTechnician(ctx context.Context, arg CountManag
 	return count, err
 }
 
+const deleteAllManagersForTechnician = `-- name: DeleteAllManagersForTechnician :exec
+DELETE FROM technician_managers
+WHERE company_id = $1
+  AND technician_id = $2
+`
+
+type DeleteAllManagersForTechnicianParams struct {
+	CompanyID    pgtype.UUID
+	TechnicianID pgtype.UUID
+}
+
+func (q *Queries) DeleteAllManagersForTechnician(ctx context.Context, arg DeleteAllManagersForTechnicianParams) error {
+	_, err := q.db.Exec(ctx, deleteAllManagersForTechnician, arg.CompanyID, arg.TechnicianID)
+	return err
+}
+
 const listManagersByTechnician = `-- name: ListManagersByTechnician :many
 SELECT
     u.id,

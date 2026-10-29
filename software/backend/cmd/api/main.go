@@ -13,9 +13,11 @@ import (
 
 	"backend/internal/auth"
 	"backend/internal/bootstrap"
+	"backend/internal/company"
 	"backend/internal/config"
 	"backend/internal/db"
 	"backend/internal/httpapi"
+	"backend/internal/user"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -68,12 +70,21 @@ func main() {
 	}
 
 	tokens := auth.NewTokenManager(cfg.JWTSecret)
+
 	authService := auth.NewService(pool, tokens)
 	authHandler := auth.NewHandler(authService, queries, tokens)
 
+	companyService := company.NewService(pool)
+	companyHandler := company.NewHandler(companyService, queries, tokens)
+
+	userService := user.NewService(pool)
+	userHandler := user.NewHandler(userService, queries, tokens)
+
 	router := httpapi.NewRouter(httpapi.Dependencies{
-		Pinger:      pool,
-		AuthHandler: authHandler,
+		Pinger:         pool,
+		AuthHandler:    authHandler,
+		CompanyHandler: companyHandler,
+		UserHandler:    userHandler,
 	})
 
 	srv := &http.Server{

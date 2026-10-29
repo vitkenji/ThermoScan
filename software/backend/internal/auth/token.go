@@ -108,6 +108,14 @@ func HashRefreshToken(rawToken string) string {
 	return hex.EncodeToString(sum[:])
 }
 
+func GenerateTemporaryPassword() (string, error) {
+	buf := make([]byte, 16)
+	if _, err := rand.Read(buf); err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(buf), nil
+}
+
 func HashPassword(plain string) (string, error) {
 	if len(plain) < 8 {
 		return "", errors.New("password must be at least 8 characters long")

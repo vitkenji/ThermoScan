@@ -16,6 +16,11 @@ WHERE company_id = $1
   AND technician_id = $2
   AND manager_id = $3;
 
+-- name: DeleteAllManagersForTechnician :exec
+DELETE FROM technician_managers
+WHERE company_id = $1
+  AND technician_id = $2;
+
 -- name: CountManagersForTechnician :one
 SELECT count(*)
 FROM technician_managers

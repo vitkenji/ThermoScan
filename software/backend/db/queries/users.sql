@@ -72,6 +72,23 @@ SELECT
 FROM users
 WHERE company_id = $1 AND id = $2;
 
+-- name: GetCompanyUserByIDForUpdate :one
+SELECT
+    id,
+    company_id,
+    name,
+    email,
+    password_hash,
+    role,
+    is_active,
+    is_default_manager,
+    must_change_password,
+    created_at,
+    updated_at
+FROM users
+WHERE company_id = $1 AND id = $2
+FOR UPDATE;
+
 -- name: ListUsersByCompany :many
 SELECT
     id,
