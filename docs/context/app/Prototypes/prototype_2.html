@@ -1,0 +1,2288 @@
+<!DOCTYPE html><html class="h-full bg-slate-900" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ThermoScan Mobile Prototype - 30 Screens</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary-fixed": "#c5e7ff",
+            "thermal-mid": "#FFD43B",
+            "on-tertiary-fixed": "#001f27",
+            "on-background": "#101c2e",
+            "thermal-cool": "#19B5D6",
+            "status-success": "#0F7D43",
+            "primary": "#00374e",
+            "on-secondary-fixed": "#301400",
+            "tertiary-fixed-dim": "#51d6f8",
+            "inverse-primary": "#97cdef",
+            "primary-fixed-dim": "#97cdef",
+            "on-surface-variant": "#41484d",
+            "on-tertiary": "#ffffff",
+            "on-primary-fixed-variant": "#054c69",
+            "surface-dim": "#cfdaf3",
+            "outline": "#71787e",
+            "tertiary-container": "#005161",
+            "background": "#f9f9ff",
+            "on-surface": "#101c2e",
+            "secondary-fixed": "#ffdcc5",
+            "on-primary-fixed": "#001e2d",
+            "tertiary-fixed": "#b0ecff",
+            "surface-tint": "#2a6482",
+            "border-subtle": "#D5DEE7",
+            "tertiary": "#003945",
+            "thermal-warm": "#FF8A1F",
+            "on-error-container": "#93000a",
+            "surface-container-low": "#f0f3ff",
+            "status-error": "#C62828",
+            "surface-container-highest": "#d7e3fc",
+            "surface-white": "#FFFFFF",
+            "error": "#ba1a1a",
+            "surface-container": "#e7eeff",
+            "surface-variant": "#d7e3fc",
+            "surface-container-lowest": "#ffffff",
+            "primary-container": "#0b4f6c",
+            "status-warning": "#B45309",
+            "on-secondary-container": "#633000",
+            "canvas-bg": "#F4F8FB",
+            "on-primary": "#ffffff",
+            "secondary": "#944a00",
+            "surface-bright": "#f9f9ff",
+            "thermal-hot": "#E5322D",
+            "secondary-fixed-dim": "#ffb783",
+            "surface-container-high": "#dee8ff",
+            "thermal-cold": "#1E4FD8",
+            "on-secondary-fixed-variant": "#713700",
+            "on-primary-container": "#8ac0e1",
+            "text-muted": "#5B6B80",
+            "on-tertiary-fixed-variant": "#004e5e",
+            "surface": "#f9f9ff",
+            "on-tertiary-container": "#3fc8ea",
+            "error-container": "#ffdad6",
+            "outline-variant": "#c0c7ce",
+            "inverse-surface": "#253144",
+            "inverse-on-surface": "#ecf1ff",
+            "on-error": "#ffffff",
+            "secondary-container": "#ff8a1f",
+            "on-secondary": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin": "1.5rem",
+            "space-xs": "0.5rem",
+            "space-md": "1rem",
+            "gutter": "1rem",
+            "space-xl": "2rem",
+            "space-lg": "1.5rem",
+            "space-sm": "0.75rem"
+          },
+          "fontFamily": {
+            "headline-sm": ["Space Grotesk", "sans-serif"],
+            "body-md": ["Inter", "sans-serif"],
+            "label-caption": ["Inter", "sans-serif"],
+            "label-chip": ["Inter", "sans-serif"],
+            "body-lg": ["Inter", "sans-serif"],
+            "label-tabular": ["Inter", "sans-serif"],
+            "body-sm": ["Inter", "sans-serif"],
+            "headline-lg": ["Space Grotesk", "sans-serif"],
+            "headline-md": ["Space Grotesk", "sans-serif"]
+          },
+          "fontSize": {
+            "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "500"}],
+            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "label-caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+            "label-chip": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+            "label-tabular": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+            "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* Absolute Flat Utilitarian Rule: No drop shadows */
+    *, ::before, ::after {
+      box-shadow: none !important;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    /* Hide scrollbars for device feel */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col items-center justify-start bg-slate-900 text-slate-100 p-2 md:p-6 overflow-hidden select-none font-body-md">
+<!-- TOP WORKBENCH CONTROL BAR -->
+<header class="w-full max-w-5xl bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 mb-4 flex flex-wrap items-center justify-between gap-3 text-sm z-50">
+<div class="flex items-center gap-3">
+<div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-container text-white"><svg viewBox="0 0 64 64" class="w-5 h-5" aria-hidden="true"><defs><radialGradient id="ts-hotspot-header" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFD43B"></stop><stop offset="55%" stop-color="#FF8A1F"></stop><stop offset="100%" stop-color="#E5322D"></stop></radialGradient></defs><g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="13" width="52" height="38" rx="6"></rect><path d="M23 13v38M41 13v38M6 32h52"></path></g><circle cx="49.5" cy="22.5" r="6.5" fill="url(#ts-hotspot-header)"></circle></svg></div>
+<div>
+<div class="font-headline-sm text-white font-bold tracking-tight flex items-center gap-2">
+          ThermoScan <span class="text-xs px-2 py-0.5 rounded bg-sky-900 text-sky-200 border border-sky-700">Mobile Prototype</span>
+</div>
+<div class="text-xs text-slate-400">Photovoltaic Diagnostic &amp; Automated Actuator Suite (SCR-01 to SCR-30)</div>
+</div>
+</div>
+<div class="flex items-center flex-wrap gap-2">
+<!-- Role Switcher -->
+<div class="flex items-center gap-1.5 bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-700">
+<span class="text-xs text-slate-400 font-medium">Role:</span>
+<select class="bg-transparent text-xs text-white font-semibold focus:outline-none cursor-pointer" id="roleSelector" onchange="setRole(this.value)">
+<option class="bg-slate-800 text-white" value="Manager">Manager</option>
+<option class="bg-slate-800 text-white" value="Technician">Technician</option>
+<option class="bg-slate-800 text-white" value="Client">Client</option>
+<option class="bg-slate-800 text-white" value="Admin">System Admin</option>
+</select>
+</div>
+<!-- Quick Jump 30 Screen Selector -->
+<div class="flex items-center gap-1.5 bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-700">
+<span class="text-xs text-slate-400 font-medium">Jump:</span>
+<select class="bg-transparent text-xs text-white font-medium focus:outline-none cursor-pointer max-w-[200px] md:max-w-[280px]" id="screenSelector" onchange="navigateTo(this.value)">
+<optgroup class="bg-slate-800 text-slate-300" label="Authentication &amp; Onboarding">
+<option value="SCR-01">SCR-01: Splash</option>
+<option value="SCR-02">SCR-02: Login</option>
+<option value="SCR-03">SCR-03: Change Password (First Login)</option>
+</optgroup>
+<optgroup class="bg-slate-800 text-slate-300" label="System Admin Suite">
+<option value="SCR-04">SCR-04: Companies (Admin Home)</option>
+<option value="SCR-05">SCR-05: Create Company Modal</option>
+<option value="SCR-06">SCR-06: Company Details &amp; Managers</option>
+<option value="SCR-07">SCR-07: Create Manager Modal</option>
+<option value="SCR-08">SCR-08: Reset Manager Password</option>
+</optgroup>
+<optgroup class="bg-slate-800 text-slate-300" label="Core Modules &amp; Telemetry">
+<option selected="" value="SCR-09">SCR-09: Modules List (Main Hub)</option>
+<option value="SCR-10">SCR-10: Module Details — Overview (PV-002)</option>
+<option value="SCR-11">SCR-11: Module Details — Measurements</option>
+<option value="SCR-12">SCR-12: Module Details — Cleanings</option>
+<option value="SCR-13">SCR-13: Module Details — Configuration</option>
+<option value="SCR-14">SCR-14: Module Details — Access</option>
+<option value="SCR-15">SCR-15: Export PDF Preview</option>
+</optgroup>
+<optgroup class="bg-slate-800 text-slate-300" label="Installation Wizard">
+<option value="SCR-16">SCR-16: Step 1 — Connect Device</option>
+<option value="SCR-17">SCR-17: Step 2 — GPS Location</option>
+<option value="SCR-18">SCR-18: Step 3 — Orientation (Sensors)</option>
+<option value="SCR-19">SCR-19: Step 4 — Array Config</option>
+<option value="SCR-20">SCR-20: Step 5 — Review &amp; Save</option>
+</optgroup>
+<optgroup class="bg-slate-800 text-slate-300" label="Alerts &amp; Actions">
+<option value="SCR-21">SCR-21: Alerts Feed</option>
+<option value="SCR-22">SCR-22: Manager Pending Actions</option>
+<option value="SCR-29">SCR-29: Reservoir Depleted Banners</option>
+<option value="SCR-30">SCR-30: PV-001 Hotspot Measurement Details</option>
+</optgroup>
+<optgroup class="bg-slate-800 text-slate-300" label="Settings &amp; User Management">
+<option value="SCR-23">SCR-23: Settings — Profile</option>
+<option value="SCR-24">SCR-24: Settings — Administration</option>
+<option value="SCR-25">SCR-25: Create/Edit User Modal</option>
+<option value="SCR-26">SCR-26: Create/Edit Client Modal</option>
+<option value="SCR-27">SCR-27: Reset User Password Modal</option>
+<option value="SCR-28">SCR-28: Settings — Email Notifications</option>
+</optgroup>
+</select>
+</div>
+<!-- Quick Back / Forward simulation -->
+<button class="px-2 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-xs text-white" onclick="historyBack()" title="Previous Screen">
+<span class="material-symbols-outlined text-sm">undo</span>
+</button>
+</div>
+</header>
+<!-- MOBILE DEVICE FRAME (390 x 844 scaled viewport) -->
+<main class="relative w-[390px] h-[780px] max-h-[88vh] bg-canvas-bg rounded-[36px] border-[6px] border-slate-700 overflow-hidden flex flex-col text-on-surface">
+<!-- DEVICE STATUS BAR -->
+<div class="h-6 w-full bg-surface-white flex items-center justify-between px-6 text-[11px] font-semibold text-text-muted select-none border-b border-border-subtle shrink-0 z-30">
+<span class="">09:41</span>
+<div class="flex items-center gap-1.5 text-xs text-on-surface">
+<span class="material-symbols-outlined text-xs">signal_cellular_4_bar</span>
+<span class="material-symbols-outlined text-xs">wifi</span>
+<span class="material-symbols-outlined text-xs">battery_charging_full</span>
+</div>
+</div>
+<!-- SHARED TOP APP BAR -->
+<div class="sticky top-0 z-40 flex items-center justify-between w-full h-14 px-margin bg-surface-white border-b border-border-subtle shrink-0" id="topAppBar">
+<div class="flex items-center gap-2">
+<button class="p-1.5 -ml-1.5 rounded-lg text-primary hover:bg-canvas-bg active:scale-[0.98] transition-transform opacity-30 pointer-events-none" id="topBarBackBtn" onclick="historyBack()">
+<span class="material-symbols-outlined text-xl">arrow_back</span>
+</button>
+<div class="w-6 h-6 rounded bg-primary-container text-white flex items-center justify-center p-0.5 shrink-0"><svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><defs><radialGradient id="ts-hotspot-topbar" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFD43B"></stop><stop offset="55%" stop-color="#FF8A1F"></stop><stop offset="100%" stop-color="#E5322D"></stop></radialGradient></defs><g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="13" width="52" height="38" rx="6"></rect><path d="M23 13v38M41 13v38M6 32h52"></path></g><circle cx="49.5" cy="22.5" r="6.5" fill="url(#ts-hotspot-topbar)"></circle></svg></div><span class="font-headline-sm text-headline-sm text-primary font-bold tracking-tight" id="topBarBrandLogo">ThermoScan</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="h-6 px-2 text-xs flex items-center font-semibold rounded bg-amber-100 text-amber-900 border border-amber-300" id="roleBadge">Client</span>
+<button class="p-1 rounded-lg text-text-muted hover:bg-canvas-bg active:scale-[0.98] transition-transform" id="topBarTrailingBtn" onclick="navigateTo('SCR-23')">
+<span class="material-symbols-outlined text-xl">admin_panel_settings</span>
+</button>
+</div>
+</div>
+<!-- INNER CANVAS CONTAINER (All 30 screen partials mount here) -->
+<div class="flex-1 w-full overflow-y-auto no-scrollbar relative bg-canvas-bg pb-6" id="canvasViewport">
+          <div class="h-full flex flex-col items-center justify-center p-margin text-center bg-canvas-bg min-h-[640px]">
+            <div class="w-20 h-20 rounded-2xl bg-primary-container text-white flex items-center justify-center mb-6 relative">
+              <span class="material-symbols-outlined text-4xl">solar_power</span>
+              <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-thermal-hot border-2 border-white animate-ping"></span>
+              <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-thermal-hot border-2 border-white"></span>
+            </div>
+            <h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">ThermoScan</h1>
+            <p class="font-body-md text-text-muted max-w-[260px] mb-8">Photovoltaic Diagnostic &amp; Radiometric Cleaning System</p>
+            <div class="w-48 h-1.5 bg-border-subtle rounded-full overflow-hidden mb-6">
+              <div class="h-full bg-primary-container w-2/3 animate-pulse"></div>
+            </div>
+            <button onclick="navigateTo('SCR-02')" class="w-full h-12 bg-primary-container text-white font-medium rounded-xl active:scale-[0.98] transition-transform">
+              Get Started
+            </button>
+          </div>
+        </div>
+<!-- SHARED BOTTOM NAVIGATION BAR (Strictly 3 items: Modules · Alerts · Settings) -->
+<!-- Suppressed for System Admin role OR Linear Onboarding / Modals -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 px-space-xs bg-surface-white border-t border-border-subtle shrink-0 hidden" id="bottomNavBar">
+<!-- 1. Modules -->
+<button class="flex flex-col items-center justify-center flex-1 h-full text-primary font-bold transition-all" id="navModulesBtn" onclick="navigateTo('SCR-09')">
+<span class="material-symbols-outlined text-2xl">solar_power</span>
+<span class="font-label-caption text-[11px] mt-0.5">Modules</span>
+</button>
+<!-- 2. Alerts -->
+<button class="flex flex-col items-center justify-center flex-1 h-full text-text-muted transition-all" id="navAlertsBtn" onclick="navigateTo('SCR-21')">
+<span class="material-symbols-outlined text-2xl">warning</span>
+<span class="font-label-caption text-[11px] mt-0.5">Alerts</span>
+<span class="absolute top-2 right-6 w-2 h-2 rounded-full bg-status-error"></span>
+</button>
+<!-- 3. Settings -->
+<button class="flex flex-col items-center justify-center flex-1 h-full text-text-muted transition-all" id="navSettingsBtn" onclick="navigateTo('SCR-23')">
+<span class="material-symbols-outlined text-2xl">settings</span>
+<span class="font-label-caption text-[11px] mt-0.5">Settings</span>
+</button>
+</nav>
+</main>
+<!-- SCREEN GENERATION AND NAVIGATION LOGIC -->
+<script>
+    // State
+    let currentScreen = "SCR-09";
+    let currentRole = "Manager"; // Manager, Technician, Client, Admin
+    const navHistory = [];
+
+    // Screen Catalog
+    const screens = {
+      // -------------------------------------------------------------
+      // SCR-01: Splash Screen
+      // -------------------------------------------------------------
+      "SCR-01": {
+        hideBottomNav: true,
+        title: "ThermoScan",
+        render: () => `
+          <div class="h-full flex flex-col items-center justify-center p-margin text-center bg-canvas-bg min-h-[640px]">
+            <div class="w-20 h-20 rounded-2xl bg-primary-container text-white flex items-center justify-center mb-6 relative">
+              <span class="material-symbols-outlined text-4xl">solar_power</span>
+              <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-thermal-hot border-2 border-white animate-ping"></span>
+              <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-thermal-hot border-2 border-white"></span>
+            </div>
+            <h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">ThermoScan</h1>
+            <p class="font-body-md text-text-muted max-w-[260px] mb-8">Photovoltaic Diagnostic & Radiometric Cleaning System</p>
+            <div class="w-48 h-1.5 bg-border-subtle rounded-full overflow-hidden mb-6">
+              <div class="h-full bg-primary-container w-2/3 animate-pulse"></div>
+            </div>
+            <button onclick="navigateTo('SCR-02')" class="w-full h-12 bg-primary-container text-white font-medium rounded-xl active:scale-[0.98] transition-transform">
+              Get Started
+            </button>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-02: Login Screen
+      // -------------------------------------------------------------
+      "SCR-02": {
+        hideBottomNav: true,
+        title: "Login",
+        render: () => `
+          <div class="p-margin flex flex-col min-h-[640px] justify-between">
+            <div>
+              <div class="w-12 h-12 rounded-xl bg-primary-container text-white flex items-center justify-center mb-4">
+                <span class="material-symbols-outlined text-2xl">solar_power</span>
+              </div>
+              <h2 class="font-headline-md text-headline-md text-on-surface">Welcome Back</h2>
+              <p class="font-body-sm text-text-muted mt-1">Field Diagnostic & Module Telemetry Access</p>
+              
+              <div class="mt-8 space-y-4">
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Company / Domain</label>
+                  <input type="text" value="SolTech Energy Ltd" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                </div>
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">User Email</label>
+                  <input type="email" value="alex.martinez@soltech.io" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                </div>
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Password</label>
+                  <input type="password" value="••••••••••••" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                </div>
+              </div>
+
+              <div class="mt-3 flex justify-between items-center text-xs">
+                <label class="flex items-center gap-2 text-text-muted">
+                  <input type="checkbox" checked class="rounded border-border-subtle text-primary-container focus:ring-0">
+                  Remember device
+                </label>
+                <a href="#" class="text-primary-container font-semibold">Forgot Password?</a>
+              </div>
+            </div>
+
+            <div class="mt-8 space-y-3">
+              <button onclick="navigateTo('SCR-09')" class="w-full h-12 bg-primary-container text-white font-medium rounded-xl active:scale-[0.98] transition-transform">
+                Sign In
+              </button>
+              <button onclick="navigateTo('SCR-03')" class="w-full h-12 bg-transparent border border-border-subtle text-on-surface font-medium rounded-xl text-xs active:scale-[0.98] transition-transform">
+                Simulate First-Login Flow (SCR-03)
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-03: Change Password (First Login)
+      // -------------------------------------------------------------
+      "SCR-03": {
+        hideBottomNav: true,
+        title: "Change Password",
+        render: () => `
+          <div class="p-margin flex flex-col min-h-[640px] justify-between">
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-amber-50 text-status-warning border border-amber-200 flex items-center justify-center mb-3">
+                <span class="material-symbols-outlined text-xl">lock_reset</span>
+              </div>
+              <h2 class="font-headline-md text-headline-md text-on-surface">Mandatory Password Update</h2>
+              <p class="font-body-sm text-text-muted mt-1">First-time login detected. You must replace your temporary password with an encrypted master key.</p>
+
+              <div class="mt-6 space-y-4">
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Temporary Password</label>
+                  <input type="password" value="Temp#8402Xz" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                </div>
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">New Permanent Password</label>
+                  <input type="password" placeholder="At least 12 characters" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                </div>
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Confirm New Password</label>
+                  <input type="password" placeholder="Re-enter password" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                </div>
+              </div>
+
+              <div class="mt-4 p-3 bg-canvas-bg rounded-xl border border-border-subtle text-xs space-y-1 text-text-muted">
+                <div class="flex items-center gap-1.5 text-status-success font-medium">
+                  <span class="material-symbols-outlined text-sm">check_circle</span> Minimum 10 alphanumeric characters
+                </div>
+                <div class="flex items-center gap-1.5 text-status-success font-medium">
+                  <span class="material-symbols-outlined text-sm">check_circle</span> At least one special actuator symbol (!@#$)
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <button onclick="navigateTo('SCR-09')" class="w-full h-12 bg-primary-container text-white font-medium rounded-xl active:scale-[0.98] transition-transform">
+                Save & Continue to Dashboard
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-04: Companies (Admin Home)
+      // -------------------------------------------------------------
+      "SCR-04": {
+        hideBottomNav: true,
+        title: "Companies (Admin)",
+        render: () => `
+          <div class="p-margin">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2 class="font-headline-md text-headline-md text-on-surface">Registered Companies</h2>
+                <p class="font-body-sm text-text-muted">System Admin Management Hub</p>
+              </div>
+              <button onclick="navigateTo('SCR-05')" class="h-9 px-3 bg-primary-container text-white text-xs font-semibold rounded-lg flex items-center gap-1 active:scale-[0.98]">
+                <span class="material-symbols-outlined text-sm">add</span> Add
+              </button>
+            </div>
+
+            <div class="space-y-3">
+              <div onclick="navigateTo('SCR-06')" class="bg-surface-white p-4 rounded-2xl border border-border-subtle cursor-pointer hover:border-primary-container active:scale-[0.98] transition-all">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h3 class="font-body-lg text-on-surface font-semibold">SolTech Energy Ltd</h3>
+                    <p class="text-xs text-text-muted">Domain: soltech.io • 5 Arrays Assigned</p>
+                  </div>
+                  <span class="h-6 px-2 text-xs flex items-center font-semibold rounded bg-emerald-100 text-status-success border border-emerald-200">Active</span>
+                </div>
+                <div class="mt-3 pt-3 border-t border-border-subtle flex justify-between text-xs text-text-muted">
+                  <span>Managers: 3</span>
+                  <span>Modules: 24 active</span>
+                </div>
+              </div>
+
+              <div onclick="navigateTo('SCR-06')" class="bg-surface-white p-4 rounded-2xl border border-border-subtle cursor-pointer hover:border-primary-container active:scale-[0.98] transition-all">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h3 class="font-body-lg text-on-surface font-semibold">Helios Solar Park IV</h3>
+                    <p class="text-xs text-text-muted">Domain: helios-grid.com • 12 Arrays</p>
+                  </div>
+                  <span class="h-6 px-2 text-xs flex items-center font-semibold rounded bg-emerald-100 text-status-success border border-emerald-200">Active</span>
+                </div>
+                <div class="mt-3 pt-3 border-t border-border-subtle flex justify-between text-xs text-text-muted">
+                  <span>Managers: 2</span>
+                  <span>Modules: 68 active</span>
+                </div>
+              </div>
+
+              <div onclick="navigateTo('SCR-06')" class="bg-surface-white p-4 rounded-2xl border border-border-subtle cursor-pointer hover:border-primary-container active:scale-[0.98] transition-all">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h3 class="font-body-lg text-on-surface font-semibold">Atacama Desert Renewables</h3>
+                    <p class="text-xs text-text-muted">Domain: atacamapv.cl • Inactive setup</p>
+                  </div>
+                  <span class="h-6 px-2 text-xs flex items-center font-semibold rounded bg-amber-100 text-status-warning border border-amber-200">Pending</span>
+                </div>
+                <div class="mt-3 pt-3 border-t border-border-subtle flex justify-between text-xs text-text-muted">
+                  <span>Managers: 1</span>
+                  <span>Modules: 4 provisioned</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-05: Create Company Modal
+      // -------------------------------------------------------------
+      "SCR-05": {
+        hideBottomNav: true,
+        title: "Create Company",
+        render: () => `
+          <div class="p-margin flex flex-col min-h-[640px] justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
+                <h2 class="font-headline-md text-headline-md text-on-surface">Create Company</h2>
+                <button onclick="navigateTo('SCR-04')" class="text-text-muted"><span class="material-symbols-outlined">close</span></button>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Company Legal Name</label>
+                  <input type="text" placeholder="e.g. Andean Solar SpA" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                </div>
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Corporate Domain</label>
+                  <input type="text" placeholder="andeansolar.com" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                </div>
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Initial Primary Manager Email</label>
+                  <input type="email" placeholder="manager@andeansolar.com" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                </div>
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Auto-Generated Temporary Password</label>
+                  <div class="flex gap-2">
+                    <input type="text" readonly value="Thermo#2026!Andes" class="w-full h-12 bg-canvas-bg border border-border-subtle rounded-xl px-4 text-sm font-mono text-primary font-bold">
+                    <button class="px-3 bg-surface-white border border-border-subtle rounded-xl text-primary font-semibold text-xs active:scale-95">Copy</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2 mt-6">
+              <button onclick="navigateTo('SCR-06')" class="w-full h-12 bg-primary-container text-white font-medium rounded-xl active:scale-[0.98]">
+                Provision Company & Dispatch Email
+              </button>
+              <button onclick="navigateTo('SCR-04')" class="w-full h-12 bg-transparent text-text-muted font-medium rounded-xl">
+                Cancel
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-06: Company Details & Managers
+      // -------------------------------------------------------------
+      "SCR-06": {
+        hideBottomNav: true,
+        title: "Company Details",
+        render: () => `
+          <div class="p-margin space-y-4">
+            <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">SolTech Energy Ltd</h2>
+                  <p class="text-xs text-text-muted">Enterprise Tier • ID: SOL-9042</p>
+                </div>
+                <span class="h-6 px-2 text-xs flex items-center font-semibold rounded bg-emerald-100 text-status-success border border-emerald-200">Active</span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <h3 class="font-headline-sm text-sm font-bold text-on-surface">Assigned Managers</h3>
+              <button onclick="navigateTo('SCR-07')" class="h-8 px-2.5 bg-primary-container text-white text-xs font-semibold rounded-lg flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">person_add</span> Add
+              </button>
+            </div>
+
+            <div class="space-y-2.5">
+              <div class="bg-surface-white p-3.5 rounded-xl border border-border-subtle flex justify-between items-center">
+                <div>
+                  <div class="font-semibold text-sm text-on-surface">Alex Martinez</div>
+                  <div class="text-xs text-text-muted">alex.martinez@soltech.io</div>
+                  <div class="text-[10px] text-text-muted mt-0.5">Last active: 10 mins ago</div>
+                </div>
+                <button onclick="navigateTo('SCR-08')" class="p-2 text-primary-container hover:bg-canvas-bg rounded-lg border border-border-subtle text-xs flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">key</span> Reset
+                </button>
+              </div>
+
+              <div class="bg-surface-white p-3.5 rounded-xl border border-border-subtle flex justify-between items-center">
+                <div>
+                  <div class="font-semibold text-sm text-on-surface">Elena Rostova</div>
+                  <div class="text-xs text-text-muted">e.rostova@soltech.io</div>
+                  <div class="text-[10px] text-text-muted mt-0.5">Last active: Yesterday</div>
+                </div>
+                <button onclick="navigateTo('SCR-08')" class="p-2 text-primary-container hover:bg-canvas-bg rounded-lg border border-border-subtle text-xs flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">key</span> Reset
+                </button>
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <button onclick="navigateTo('SCR-09')" class="w-full h-11 bg-canvas-bg border border-border-subtle text-primary font-semibold text-xs rounded-xl flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-base">view_in_ar</span> View Company Solar Array Fleet
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-07: Create Manager Modal
+      // -------------------------------------------------------------
+      "SCR-07": {
+        hideBottomNav: true,
+        title: "New Manager",
+        render: () => `
+          <div class="p-margin flex flex-col min-h-[640px] justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
+                <h2 class="font-headline-md text-headline-md text-on-surface">Add Company Manager</h2>
+                <button onclick="navigateTo('SCR-06')" class="text-text-muted"><span class="material-symbols-outlined">close</span></button>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Full Name</label>
+                  <input type="text" placeholder="e.g. David Vance" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                </div>
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Corporate Email</label>
+                  <input type="email" placeholder="d.vance@soltech.io" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                </div>
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Scope of Operations</label>
+                  <select class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                    <option>All Solar Arrays & Actuators</option>
+                    <option>Array Group A (North Field)</option>
+                    <option>Array Group B (South Field)</option>
+                  </select>
+                </div>
+                <div class="p-3 bg-canvas-bg rounded-xl border border-border-subtle">
+                  <div class="text-xs text-text-muted">Temporary password will be generated and dispatched automatically via AWS SES.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2 mt-6">
+              <button onclick="navigateTo('SCR-06')" class="w-full h-12 bg-primary-container text-white font-medium rounded-xl active:scale-[0.98]">
+                Create Manager & Send Invite
+              </button>
+              <button onclick="navigateTo('SCR-06')" class="w-full h-12 bg-transparent text-text-muted font-medium rounded-xl">
+                Cancel
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-08: Reset Manager Password Modal
+      // -------------------------------------------------------------
+      "SCR-08": {
+        hideBottomNav: true,
+        title: "Reset Password",
+        render: () => `
+          <div class="p-margin flex flex-col min-h-[640px] justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
+                <h2 class="font-headline-md text-headline-md text-on-surface">Reset Password</h2>
+                <button onclick="navigateTo('SCR-06')" class="text-text-muted"><span class="material-symbols-outlined">close</span></button>
+              </div>
+
+              <div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl mb-4">
+                <div class="flex gap-2">
+                  <span class="material-symbols-outlined text-status-warning">warning</span>
+                  <div>
+                    <div class="font-semibold text-xs text-amber-900">Security Invalidation</div>
+                    <div class="text-xs text-amber-800 mt-0.5">This will immediately revoke active JWT sessions for <strong>Alex Martinez</strong>.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">New Temporary Key</label>
+                  <input type="text" readonly value="Reset#2026-X992" class="w-full h-12 bg-canvas-bg border border-border-subtle rounded-xl px-4 text-sm font-mono text-primary font-bold">
+                </div>
+                <label class="flex items-center gap-2 text-xs text-on-surface">
+                  <input type="checkbox" checked class="rounded border-border-subtle text-primary-container">
+                  Force password update on subsequent session initialization
+                </label>
+              </div>
+            </div>
+
+            <div class="space-y-2 mt-6">
+              <button onclick="navigateTo('SCR-06')" class="w-full h-12 bg-status-error text-white font-medium rounded-xl active:scale-[0.98]">
+                Confirm Invalidation & Dispatch
+              </button>
+              <button onclick="navigateTo('SCR-06')" class="w-full h-12 bg-transparent text-text-muted font-medium rounded-xl">
+                Cancel
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-09: Modules List (Main Hub)
+      // -------------------------------------------------------------
+      "SCR-09": {
+        hideBottomNav: false,
+        activeTab: "Modules",
+        title: "Modules",
+        render: () => `
+          <div class="p-margin space-y-4">
+            <!-- Header & Filter Row -->
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="font-headline-md text-headline-md text-on-surface">Field Modules</h2>
+                <p class="font-body-sm text-text-muted">5 Telemetry Nodes Online</p>
+              </div>
+              <button onclick="navigateTo('SCR-16')" class="h-9 px-3 bg-primary-container text-white text-xs font-semibold rounded-lg flex items-center gap-1 active:scale-[0.98]">
+                <span class="material-symbols-outlined text-sm">add</span> Add PV
+              </button>
+            </div>
+
+            <!-- Urgent Global Notice Banner if Alarms Exist -->
+            <div onclick="navigateTo('SCR-30')" class="bg-surface-white p-3.5 rounded-xl border border-border-subtle border-l-4 border-l-status-error cursor-pointer active:scale-[0.99] transition-transform">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-status-error fill-icon">error</span>
+                  <div>
+                    <div class="font-semibold text-xs text-status-error">Active Hotspot Alarmed: PV-001</div>
+                    <div class="text-[11px] text-text-muted">Max: 57.8°C (Baseline +15.3°C) • Tap for diagnostics</div>
+                  </div>
+                </div>
+                <span class="material-symbols-outlined text-text-muted text-sm">chevron_right</span>
+              </div>
+            </div>
+
+            <!-- List of Modules (PV-001 through PV-005) -->
+            <div class="space-y-3">
+              <!-- PV-001 (CRITICAL HOTSPOT) -->
+              <div onclick="navigateTo('SCR-30')" class="bg-surface-white p-4 rounded-2xl border border-border-subtle border-l-4 border-l-status-error cursor-pointer hover:border-primary-container transition-all">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h3 class="font-body-lg text-on-surface font-bold">PV-001</h3>
+                      <span class="h-5 px-1.5 text-[10px] flex items-center font-bold rounded bg-red-100 text-status-error border border-red-300">
+                        CRITICAL HOTSPOT
+                      </span>
+                    </div>
+                    <p class="text-xs text-text-muted mt-0.5">Array 1 • Inverter 04 • Actuator A1</p>
+                  </div>
+                  <span class="font-label-tabular text-sm font-bold text-status-error">57.8°C</span>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-border-subtle grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <span class="text-[10px] text-text-muted block">Reservoir</span>
+                    <span class="font-semibold text-status-success flex items-center gap-1">
+                      <span class="material-symbols-outlined text-xs fill-icon">water_drop</span> OK
+                    </span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-text-muted block">Clean Status</span>
+                    <span class="font-semibold text-status-warning">Scheduled</span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-text-muted block">Delta T</span>
+                    <span class="font-semibold text-status-error font-mono">+15.3°C</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PV-002 (NORMAL) -->
+              <div onclick="navigateTo('SCR-10')" class="bg-surface-white p-4 rounded-2xl border border-border-subtle cursor-pointer hover:border-primary-container transition-all">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h3 class="font-body-lg text-on-surface font-bold">PV-002</h3>
+                      <span class="h-5 px-1.5 text-[10px] flex items-center font-bold rounded bg-emerald-100 text-status-success border border-emerald-300">
+                        NORMAL
+                      </span>
+                    </div>
+                    <p class="text-xs text-text-muted mt-0.5">Array 1 • Inverter 04 • Actuator A2</p>
+                  </div>
+                  <span class="font-label-tabular text-sm font-bold text-on-surface">41.2°C</span>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-border-subtle grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <span class="text-[10px] text-text-muted block">Reservoir</span>
+                    <span class="font-semibold text-status-success flex items-center gap-1">
+                      <span class="material-symbols-outlined text-xs fill-icon">water_drop</span> OK
+                    </span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-text-muted block">Clean Status</span>
+                    <span class="font-semibold text-text-muted">Idle</span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-text-muted block">Delta T</span>
+                    <span class="font-semibold text-status-success font-mono">+0.8°C</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PV-003 (NORMAL) -->
+              <div onclick="navigateTo('SCR-10')" class="bg-surface-white p-4 rounded-2xl border border-border-subtle cursor-pointer hover:border-primary-container transition-all">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h3 class="font-body-lg text-on-surface font-bold">PV-003</h3>
+                      <span class="h-5 px-1.5 text-[10px] flex items-center font-bold rounded bg-emerald-100 text-status-success border border-emerald-300">
+                        NORMAL
+                      </span>
+                    </div>
+                    <p class="text-xs text-text-muted mt-0.5">Array 2 • Inverter 02 • Actuator B1</p>
+                  </div>
+                  <span class="font-label-tabular text-sm font-bold text-on-surface">39.5°C</span>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-border-subtle grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <span class="text-[10px] text-text-muted block">Reservoir</span>
+                    <span class="font-semibold text-status-success flex items-center gap-1">
+                      <span class="material-symbols-outlined text-xs fill-icon">water_drop</span> OK
+                    </span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-text-muted block">Clean Status</span>
+                    <span class="font-semibold text-text-muted">Idle</span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-text-muted block">Delta T</span>
+                    <span class="font-semibold text-status-success font-mono">+0.2°C</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PV-004 (WARNING: RESERVOIR LOW) -->
+              <div onclick="navigateTo('SCR-29')" class="bg-surface-white p-4 rounded-2xl border border-border-subtle border-l-4 border-l-status-warning cursor-pointer hover:border-primary-container transition-all">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h3 class="font-body-lg text-on-surface font-bold">PV-004</h3>
+                      <span class="h-5 px-1.5 text-[10px] flex items-center font-bold rounded bg-amber-100 text-status-warning border border-amber-300">
+                        RESERVOIR LOW
+                      </span>
+                    </div>
+                    <p class="text-xs text-text-muted mt-0.5">Array 2 • Inverter 02 • Actuator B2</p>
+                  </div>
+                  <span class="font-label-tabular text-sm font-bold text-on-surface">43.0°C</span>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-border-subtle grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <span class="text-[10px] text-text-muted block">Reservoir</span>
+                    <span class="font-semibold text-status-warning flex items-center gap-1">
+                      <span class="material-symbols-outlined text-xs">opacity</span> LOW
+                    </span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-text-muted block">Clean Status</span>
+                    <span class="font-semibold text-status-warning">Refill Req.</span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-text-muted block">Delta T</span>
+                    <span class="font-semibold text-status-success font-mono">+1.1°C</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PV-005 (NORMAL) -->
+              <div onclick="navigateTo('SCR-10')" class="bg-surface-white p-4 rounded-2xl border border-border-subtle cursor-pointer hover:border-primary-container transition-all">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h3 class="font-body-lg text-on-surface font-bold">PV-005</h3>
+                      <span class="h-5 px-1.5 text-[10px] flex items-center font-bold rounded bg-emerald-100 text-status-success border border-emerald-300">
+                        NORMAL
+                      </span>
+                    </div>
+                    <p class="text-xs text-text-muted mt-0.5">Array 3 • Inverter 01 • Actuator C1</p>
+                  </div>
+                  <span class="font-label-tabular text-sm font-bold text-on-surface">40.1°C</span>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-border-subtle grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <span class="text-[10px] text-text-muted block">Reservoir</span>
+                    <span class="font-semibold text-status-success flex items-center gap-1">
+                      <span class="material-symbols-outlined text-xs fill-icon">water_drop</span> OK
+                    </span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-text-muted block">Clean Status</span>
+                    <span class="font-semibold text-text-muted">Idle</span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-text-muted block">Delta T</span>
+                    <span class="font-semibold text-status-success font-mono">+0.5°C</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-10: Module Details — Overview (PV-002 Normal)
+      // -------------------------------------------------------------
+      "SCR-10": {
+        hideBottomNav: false,
+        activeTab: "Modules",
+        title: "Module PV-002",
+        render: () => `
+          <div class="p-margin space-y-4">
+            <!-- Sub-Navigation for Module Details Tabs -->
+            <div class="flex overflow-x-auto gap-2 pb-1 border-b border-border-subtle text-xs no-scrollbar">
+              <button onclick="navigateTo('SCR-10')" class="px-3 py-1.5 rounded-lg bg-primary-container text-white font-semibold shrink-0">Overview</button>
+              <button onclick="navigateTo('SCR-11')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Measurements</button>
+              <button onclick="navigateTo('SCR-12')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Cleanings</button>
+              <button onclick="navigateTo('SCR-13')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Configuration</button>
+              <button onclick="navigateTo('SCR-14')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Access</button>
+            </div>
+
+            <!-- Header Card -->
+            <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Module PV-002</h2>
+                  <p class="text-xs text-text-muted">SN: SOL-MOD-88219 • Monocrystalline 450W</p>
+                </div>
+                <span class="h-6 px-2 text-xs flex items-center font-bold rounded bg-emerald-100 text-status-success border border-emerald-300">
+                  NORMAL
+                </span>
+              </div>
+              <div class="mt-3 pt-3 border-t border-border-subtle flex justify-between text-xs">
+                <span class="text-text-muted">Reservoir Status:</span>
+                <span class="font-bold text-status-success flex items-center gap-1">
+                  <span class="material-symbols-outlined text-xs fill-icon">water_drop</span> OK (Binary Tank Level High)
+                </span>
+              </div>
+            </div>
+
+            <!-- 2D Thermal Map Simulation (Normal Range: 38°C - 42°C) -->
+            <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-on-surface">Radiometric Thermal Matrix</span>
+                <span class="text-[11px] text-text-muted">T_max: 41.2°C • Uniform</span>
+              </div>
+              
+              <!-- 32x24 interpolated canvas approximation with subtle gradient -->
+              <div class="w-full h-36 rounded-xl border border-border-subtle relative overflow-hidden bg-gradient-to-r from-blue-700 via-sky-500 to-teal-400 p-2 flex flex-col justify-between">
+                <div class="text-[10px] text-white/80 font-mono">GRID: 32x24 RES</div>
+                <div class="text-center text-xs font-semibold text-white drop-shadow">Uniform Heat Dissipation (No Hotspots)</div>
+                <div class="text-right text-[10px] text-white/80 font-mono">FOV: 110° AZ: 180°</div>
+              </div>
+
+              <!-- Thermal Legend -->
+              <div class="mt-2.5 flex items-center justify-between text-[10px] font-mono text-text-muted">
+                <span>35.0°C</span>
+                <div class="flex-1 mx-2 h-2 rounded bg-gradient-to-r from-blue-700 via-sky-400 via-yellow-400 to-red-600"></div>
+                <span>65.0°C</span>
+              </div>
+            </div>
+
+            <!-- READ-ONLY AUTOMATIC CLEANING CARD (NO MANUAL CONTROLS) -->
+            <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-primary-container text-lg">water_drop</span>
+                <h3 class="font-body-md font-bold text-on-surface">Automatic Cleaning Actuator</h3>
+              </div>
+              <div class="p-3 bg-canvas-bg rounded-xl border border-border-subtle text-xs text-text-muted leading-relaxed">
+                <div class="font-semibold text-on-surface mb-1 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-status-success text-sm fill-icon">check_circle</span>
+                  No cleaning scheduled
+                </div>
+                No confirmed thermal hotspot requires autonomous wash cycle execution. The actuator stays parked at Home position (X=0.0 cm).
+              </div>
+            </div>
+
+            <!-- Export PDF & Actions -->
+            <div class="pt-2">
+              <button onclick="navigateTo('SCR-15')" class="w-full h-12 bg-surface-white border border-primary-container text-primary-container font-semibold rounded-xl flex items-center justify-center gap-2 active:scale-[0.98]">
+                <span class="material-symbols-outlined text-lg">picture_as_pdf</span> Export Module PDF Report
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-11: Module Details — Measurements
+      // -------------------------------------------------------------
+      "SCR-11": {
+        hideBottomNav: false,
+        activeTab: "Modules",
+        title: "Measurements",
+        render: () => `
+          <div class="p-margin space-y-4">
+            <div class="flex overflow-x-auto gap-2 pb-1 border-b border-border-subtle text-xs no-scrollbar">
+              <button onclick="navigateTo('SCR-10')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Overview</button>
+              <button onclick="navigateTo('SCR-11')" class="px-3 py-1.5 rounded-lg bg-primary-container text-white font-semibold shrink-0">Measurements</button>
+              <button onclick="navigateTo('SCR-12')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Cleanings</button>
+              <button onclick="navigateTo('SCR-13')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Configuration</button>
+              <button onclick="navigateTo('SCR-14')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Access</button>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <h2 class="font-headline-sm text-sm font-bold text-on-surface">Telemetry History</h2>
+              <div class="flex gap-1 text-xs">
+                <button class="px-2 py-1 bg-primary-container text-white rounded font-medium">All</button>
+                <button class="px-2 py-1 bg-surface-white border border-border-subtle text-text-muted rounded">Hotspot</button>
+                <button class="px-2 py-1 bg-surface-white border border-border-subtle text-text-muted rounded">Normal</button>
+              </div>
+            </div>
+
+            <div class="space-y-2.5">
+              <div class="bg-surface-white p-3.5 rounded-xl border border-border-subtle text-xs">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="font-semibold text-on-surface">Oct 22, 11:10 AM</span>
+                  <span class="h-5 px-1.5 text-[10px] flex items-center font-bold rounded bg-emerald-100 text-status-success border border-emerald-200">NORMAL</span>
+                </div>
+                <div class="grid grid-cols-4 gap-1 text-[11px] text-text-muted mt-2 pt-2 border-t border-border-subtle">
+                  <div><span>Max:</span> <strong class="text-on-surface">41.2°C</strong></div>
+                  <div><span>Base:</span> <strong class="text-on-surface">40.4°C</strong></div>
+                  <div><span>Pwr:</span> <strong class="text-on-surface">88.4W</strong></div>
+                  <div><span>Delta:</span> <strong class="text-status-success">+0.8°C</strong></div>
+                </div>
+              </div>
+
+              <div class="bg-surface-white p-3.5 rounded-xl border border-border-subtle text-xs">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="font-semibold text-on-surface">Oct 22, 10:10 AM</span>
+                  <span class="h-5 px-1.5 text-[10px] flex items-center font-bold rounded bg-emerald-100 text-status-success border border-emerald-200">NORMAL</span>
+                </div>
+                <div class="grid grid-cols-4 gap-1 text-[11px] text-text-muted mt-2 pt-2 border-t border-border-subtle">
+                  <div><span>Max:</span> <strong class="text-on-surface">39.8°C</strong></div>
+                  <div><span>Base:</span> <strong class="text-on-surface">39.1°C</strong></div>
+                  <div><span>Pwr:</span> <strong class="text-on-surface">84.2W</strong></div>
+                  <div><span>Delta:</span> <strong class="text-status-success">+0.7°C</strong></div>
+                </div>
+              </div>
+
+              <div class="bg-surface-white p-3.5 rounded-xl border border-border-subtle text-xs">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="font-semibold text-on-surface">Oct 21, 03:00 PM</span>
+                  <span class="h-5 px-1.5 text-[10px] flex items-center font-bold rounded bg-emerald-100 text-status-success border border-emerald-200">NORMAL</span>
+                </div>
+                <div class="grid grid-cols-4 gap-1 text-[11px] text-text-muted mt-2 pt-2 border-t border-border-subtle">
+                  <div><span>Max:</span> <strong class="text-on-surface">43.1°C</strong></div>
+                  <div><span>Base:</span> <strong class="text-on-surface">42.2°C</strong></div>
+                  <div><span>Pwr:</span> <strong class="text-on-surface">91.0W</strong></div>
+                  <div><span>Delta:</span> <strong class="text-status-success">+0.9°C</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-12: Module Details — Cleanings
+      // -------------------------------------------------------------
+      "SCR-12": {
+        hideBottomNav: false,
+        activeTab: "Modules",
+        title: "Cleanings History",
+        render: () => `
+          <div class="p-margin space-y-4">
+            <div class="flex overflow-x-auto gap-2 pb-1 border-b border-border-subtle text-xs no-scrollbar">
+              <button onclick="navigateTo('SCR-10')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Overview</button>
+              <button onclick="navigateTo('SCR-11')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Measurements</button>
+              <button onclick="navigateTo('SCR-12')" class="px-3 py-1.5 rounded-lg bg-primary-container text-white font-semibold shrink-0">Cleanings</button>
+              <button onclick="navigateTo('SCR-13')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Configuration</button>
+              <button onclick="navigateTo('SCR-14')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Access</button>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <h2 class="font-headline-sm text-sm font-bold text-on-surface">Autonomous Wash Log</h2>
+              <span class="text-xs text-text-muted">Total Cycles: 18</span>
+            </div>
+
+            <div class="space-y-3">
+              <div class="bg-surface-white p-4 rounded-xl border border-border-subtle text-xs">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="font-semibold text-on-surface">Oct 19, 2026 • 09:30 AM</span>
+                  <span class="h-5 px-1.5 text-[10px] flex items-center font-bold rounded bg-emerald-100 text-status-success border border-emerald-200">VERIFIED RESOLVED</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 mt-2 pt-2 border-t border-border-subtle text-[11px]">
+                  <div><span class="text-text-muted block">Position:</span> <strong>X = 34.2 cm</strong></div>
+                  <div><span class="text-text-muted block">Duration:</span> <strong>42 sec</strong></div>
+                  <div><span class="text-text-muted block">Fluid:</span> <strong>120 mL</strong></div>
+                </div>
+                <div class="mt-2 text-[10px] text-text-muted">Post-clean verification: Baseline restored (-8.4°C dissipation).</div>
+              </div>
+
+              <div class="bg-surface-white p-4 rounded-xl border border-border-subtle text-xs">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="font-semibold text-on-surface">Oct 12, 2026 • 11:45 AM</span>
+                  <span class="h-5 px-1.5 text-[10px] flex items-center font-bold rounded bg-emerald-100 text-status-success border border-emerald-200">VERIFIED RESOLVED</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 mt-2 pt-2 border-t border-border-subtle text-[11px]">
+                  <div><span class="text-text-muted block">Position:</span> <strong>X = 18.0 cm</strong></div>
+                  <div><span class="text-text-muted block">Duration:</span> <strong>35 sec</strong></div>
+                  <div><span class="text-text-muted block">Fluid:</span> <strong>100 mL</strong></div>
+                </div>
+                <div class="mt-2 text-[10px] text-text-muted">Autonomous actuator trigger completed safely.</div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-13: Module Details — Configuration
+      // -------------------------------------------------------------
+      "SCR-13": {
+        hideBottomNav: false,
+        activeTab: "Modules",
+        title: "Configuration",
+        render: () => `
+          <div class="p-margin space-y-4">
+            <div class="flex overflow-x-auto gap-2 pb-1 border-b border-border-subtle text-xs no-scrollbar">
+              <button onclick="navigateTo('SCR-10')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Overview</button>
+              <button onclick="navigateTo('SCR-11')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Measurements</button>
+              <button onclick="navigateTo('SCR-12')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Cleanings</button>
+              <button onclick="navigateTo('SCR-13')" class="px-3 py-1.5 rounded-lg bg-primary-container text-white font-semibold shrink-0">Configuration</button>
+              <button onclick="navigateTo('SCR-14')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Access</button>
+            </div>
+
+            <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle space-y-3 text-xs">
+              <h3 class="font-bold text-sm text-on-surface mb-2">Hardware & Array Calibration</h3>
+              
+              <div class="flex justify-between py-1.5 border-b border-border-subtle">
+                <span class="text-text-muted">MAC Address</span>
+                <span class="font-mono font-semibold">00:1B:44:11:3A:B7</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-border-subtle">
+                <span class="text-text-muted">Array Dimensions</span>
+                <span class="font-semibold">1950 mm × 992 mm</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-border-subtle">
+                <span class="text-text-muted">GPS Coordinates</span>
+                <span class="font-mono font-semibold">-23.8634°, -69.1388°</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-border-subtle">
+                <span class="text-text-muted">Azimuth / Tilt</span>
+                <span class="font-semibold">180.0° / 22.5°</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-border-subtle">
+                <span class="text-text-muted">Thermal Alert Threshold</span>
+                <span class="font-semibold text-status-error font-mono">Baseline + 10.0°C</span>
+              </div>
+              <div class="flex justify-between py-1.5">
+                <span class="text-text-muted">Inspection Interval</span>
+                <span class="font-semibold">Every 60 minutes</span>
+              </div>
+            </div>
+
+            <button onclick="navigateTo('SCR-19')" class="w-full h-11 bg-canvas-bg border border-border-subtle text-primary font-semibold text-xs rounded-xl flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-base">tune</span> Modify Array Specifications
+            </button>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-14: Module Details — Access & Permissions
+      // -------------------------------------------------------------
+      "SCR-14": {
+        hideBottomNav: false,
+        activeTab: "Modules",
+        title: "Access Control",
+        render: () => `
+          <div class="p-margin space-y-4">
+            <div class="flex overflow-x-auto gap-2 pb-1 border-b border-border-subtle text-xs no-scrollbar">
+              <button onclick="navigateTo('SCR-10')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Overview</button>
+              <button onclick="navigateTo('SCR-11')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Measurements</button>
+              <button onclick="navigateTo('SCR-12')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Cleanings</button>
+              <button onclick="navigateTo('SCR-13')" class="px-3 py-1.5 rounded-lg bg-surface-white border border-border-subtle text-text-muted shrink-0">Configuration</button>
+              <button onclick="navigateTo('SCR-14')" class="px-3 py-1.5 rounded-lg bg-primary-container text-white font-semibold shrink-0">Access</button>
+            </div>
+
+            <h3 class="font-headline-sm text-sm font-bold text-on-surface">Assigned Field Technicians</h3>
+
+            <div class="space-y-3">
+              <div class="bg-surface-white p-3.5 rounded-xl border border-border-subtle flex justify-between items-center text-xs">
+                <div>
+                  <div class="font-semibold text-on-surface">Carlos Silva (Lead Tech)</div>
+                  <div class="text-text-muted">carlos.silva@soltech.io</div>
+                </div>
+                <input type="checkbox" checked class="rounded border-border-subtle text-primary-container h-5 w-5">
+              </div>
+
+              <div class="bg-surface-white p-3.5 rounded-xl border border-border-subtle flex justify-between items-center text-xs">
+                <div>
+                  <div class="font-semibold text-on-surface">Mateo Morales (Actuator Tech)</div>
+                  <div class="text-text-muted">m.morales@soltech.io</div>
+                </div>
+                <input type="checkbox" checked class="rounded border-border-subtle text-primary-container h-5 w-5">
+              </div>
+
+              <div class="bg-surface-white p-3.5 rounded-xl border border-border-subtle flex justify-between items-center text-xs">
+                <div>
+                  <div class="font-semibold text-on-surface">Julian Weber (Contractor)</div>
+                  <div class="text-text-muted">weber.contractor@external.com</div>
+                </div>
+                <input type="checkbox" class="rounded border-border-subtle text-primary-container h-5 w-5">
+              </div>
+            </div>
+
+            <button class="w-full h-11 bg-primary-container text-white font-semibold text-xs rounded-xl active:scale-[0.98]">
+              Update Access Permissions
+            </button>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-15: Export PDF Preview
+      // -------------------------------------------------------------
+      "SCR-15": {
+        hideBottomNav: true,
+        title: "Export Telemetry PDF",
+        render: () => `
+          <div class="p-margin flex flex-col min-h-[640px] justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
+                <h2 class="font-headline-md text-headline-md text-on-surface">Export Report</h2>
+                <button onclick="historyBack()" class="text-text-muted"><span class="material-symbols-outlined">close</span></button>
+              </div>
+
+              <!-- PDF Visual Preview Simulation -->
+              <div class="bg-surface-white p-4 rounded-xl border border-border-subtle mb-4 text-xs">
+                <div class="border-b border-border-subtle pb-2 mb-2 flex justify-between items-center">
+                  <span class="font-bold font-mono text-primary-container">THERMOSCAN PV AUDIT REPORT</span>
+                  <span class="text-[10px] text-text-muted">ISO 62446-3 Compliant</span>
+                </div>
+                <div class="space-y-1 text-text-muted text-[11px]">
+                  <div>Target Asset: <strong>PV-002 (SolTech Energy Array 1)</strong></div>
+                  <div>Report Window: <strong>Last 30 Days (Oct 1 - Oct 22, 2026)</strong></div>
+                  <div>Includes: <strong>Thermal Map Matrix, Delta T graphs, Wash History</strong></div>
+                </div>
+                <div class="mt-3 p-2 bg-canvas-bg rounded border border-border-subtle text-center text-text-muted text-[10px]">
+                  [PDF Render: 3 Pages • Est Size: 2.4 MB]
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <label class="block text-xs font-semibold text-text-muted">Export Format</label>
+                <div class="flex gap-2 text-xs">
+                  <button class="flex-1 py-2 rounded-lg bg-primary-container text-white font-semibold">PDF Document</button>
+                  <button class="flex-1 py-2 rounded-lg bg-surface-white border border-border-subtle text-text-muted">Raw CSV Data</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2 mt-6">
+              <button onclick="alert('PDF Generated & Downloaded successfully.'); historyBack();" class="w-full h-12 bg-primary-container text-white font-medium rounded-xl flex items-center justify-center gap-2 active:scale-[0.98]">
+                <span class="material-symbols-outlined text-lg">download</span> Download PDF Document
+              </button>
+              <button onclick="historyBack()" class="w-full h-12 bg-transparent text-text-muted font-medium rounded-xl">
+                Cancel
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-16: Installation Wizard Step 1 — Connect Device
+      // -------------------------------------------------------------
+      "SCR-16": {
+        hideBottomNav: true,
+        title: "Wizard: Step 1 / 5",
+        render: () => `
+          <div class="p-margin flex flex-col min-h-[640px] justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-primary-container">Step 1 of 5</span>
+                  <h2 class="font-headline-md text-headline-md text-on-surface">Connect Hardware</h2>
+                </div>
+                <button onclick="navigateTo('SCR-09')" class="text-text-muted"><span class="material-symbols-outlined">close</span></button>
+              </div>
+
+              <p class="font-body-sm text-text-muted mb-4">Scan the QR code located on the actuator control box or enter the Bluetooth MAC address.</p>
+
+              <!-- QR Scanner Simulation Viewport -->
+              <div class="w-full h-44 bg-slate-900 rounded-2xl border border-border-subtle flex flex-col items-center justify-center text-white relative overflow-hidden mb-4">
+                <div class="w-32 h-32 border-2 border-dashed border-sky-400 rounded-lg flex items-center justify-center">
+                  <span class="material-symbols-outlined text-3xl text-sky-400 animate-pulse">qr_code_scanner</span>
+                </div>
+                <span class="text-[11px] text-slate-300 mt-2">Align camera with actuator QR tag</span>
+              </div>
+
+              <div>
+                <label class="block font-label-caption text-text-muted mb-1">Actuator MAC Address</label>
+                <input type="text" value="00:1B:44:11:3A:C9" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm font-mono text-primary font-bold">
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <button onclick="navigateTo('SCR-17')" class="w-full h-12 bg-primary-container text-white font-medium rounded-xl flex items-center justify-center gap-2 active:scale-[0.98]">
+                Pair & Proceed to GPS <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-17: Installation Wizard Step 2 — Location
+      // -------------------------------------------------------------
+      "SCR-17": {
+        hideBottomNav: true,
+        title: "Wizard: Step 2 / 5",
+        render: () => `
+          <div class="p-margin flex flex-col min-h-[640px] justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-primary-container">Step 2 of 5</span>
+                  <h2 class="font-headline-md text-headline-md text-on-surface">Geolocation Setup</h2>
+                </div>
+                <button onclick="navigateTo('SCR-09')" class="text-text-muted"><span class="material-symbols-outlined">close</span></button>
+              </div>
+
+              <div class="p-4 bg-surface-white rounded-2xl border border-border-subtle mb-4 space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold text-on-surface">Acquired GPS Fix</span>
+                  <span class="h-5 px-2 text-[10px] font-bold rounded bg-emerald-100 text-status-success border border-emerald-300">Accuracy ±1.2m</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-xs font-mono">
+                  <div class="p-2 bg-canvas-bg rounded border border-border-subtle">
+                    <span class="text-[10px] text-text-muted block font-sans">Latitude</span>
+                    <strong>-23.863412° S</strong>
+                  </div>
+                  <div class="p-2 bg-canvas-bg rounded border border-border-subtle">
+                    <span class="text-[10px] text-text-muted block font-sans">Longitude</span>
+                    <strong>-69.138845° W</strong>
+                  </div>
+                </div>
+                <div class="flex justify-between text-xs text-text-muted pt-1">
+                  <span>Elevation: 2,410m ASL</span>
+                  <span>Satellites: 9 in lock</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block font-label-caption text-text-muted mb-1">Assigned Field Site / Farm</label>
+                <select class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                  <option>Atacama Sector Alpha - Row 12</option>
+                  <option>Atacama Sector Beta - Row 04</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="flex gap-2 mt-6">
+              <button onclick="navigateTo('SCR-16')" class="w-1/3 h-12 bg-surface-white border border-border-subtle text-on-surface font-medium rounded-xl">Back</button>
+              <button onclick="navigateTo('SCR-18')" class="w-2/3 h-12 bg-primary-container text-white font-medium rounded-xl flex items-center justify-center gap-1 active:scale-[0.98]">
+                Next: Orientation <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-18: Installation Wizard Step 3 — Orientation
+      // -------------------------------------------------------------
+      "SCR-18": {
+        hideBottomNav: true,
+        title: "Wizard: Step 3 / 5",
+        render: () => `
+          <div class="p-margin flex flex-col min-h-[640px] justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-primary-container">Step 3 of 5</span>
+                  <h2 class="font-headline-md text-headline-md text-on-surface">Panel Orientation</h2>
+                </div>
+                <button onclick="navigateTo('SCR-09')" class="text-text-muted"><span class="material-symbols-outlined">close</span></button>
+              </div>
+
+              <!-- Compass & Inclinometer Telemetry Cards -->
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle text-center">
+                  <span class="text-xs text-text-muted block">Azimuth Compass</span>
+                  <div class="w-16 h-16 rounded-full border-2 border-primary-container mx-auto my-2 flex items-center justify-center font-bold font-mono text-primary-container text-sm">
+                    180° S
+                  </div>
+                  <span class="text-[10px] text-status-success font-semibold">True Solar South</span>
+                </div>
+
+                <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle text-center">
+                  <span class="text-xs text-text-muted block">Tilt Inclinometer</span>
+                  <div class="w-16 h-16 rounded-full border-2 border-primary-container mx-auto my-2 flex items-center justify-center font-bold font-mono text-primary-container text-sm">
+                    22.5°
+                  </div>
+                  <span class="text-[10px] text-status-success font-semibold">Optimal Angle</span>
+                </div>
+              </div>
+
+              <div class="p-3 bg-canvas-bg rounded-xl border border-border-subtle text-xs text-text-muted">
+                Values auto-calibrated from actuator's embedded 9-DOF IMU accelerometer.
+              </div>
+            </div>
+
+            <div class="flex gap-2 mt-6">
+              <button onclick="navigateTo('SCR-17')" class="w-1/3 h-12 bg-surface-white border border-border-subtle text-on-surface font-medium rounded-xl">Back</button>
+              <button onclick="navigateTo('SCR-19')" class="w-2/3 h-12 bg-primary-container text-white font-medium rounded-xl flex items-center justify-center gap-1 active:scale-[0.98]">
+                Next: Array Config <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-19: Installation Wizard Step 4 — Array Config
+      // -------------------------------------------------------------
+      "SCR-19": {
+        hideBottomNav: true,
+        title: "Wizard: Step 4 / 5",
+        render: () => `
+          <div class="p-margin flex flex-col min-h-[640px] justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-primary-container">Step 4 of 5</span>
+                  <h2 class="font-headline-md text-headline-md text-on-surface">Array Specifications</h2>
+                </div>
+                <button onclick="navigateTo('SCR-09')" class="text-text-muted"><span class="material-symbols-outlined">close</span></button>
+              </div>
+
+              <div class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block font-label-caption text-text-muted mb-1">Length (mm)</label>
+                    <input type="number" value="1950" class="w-full h-11 bg-surface-white border border-border-subtle rounded-xl px-3 text-sm">
+                  </div>
+                  <div>
+                    <label class="block font-label-caption text-text-muted mb-1">Width (mm)</label>
+                    <input type="number" value="992" class="w-full h-11 bg-surface-white border border-border-subtle rounded-xl px-3 text-sm">
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block font-label-caption text-text-muted mb-1">Series Count</label>
+                    <input type="number" value="24" class="w-full h-11 bg-surface-white border border-border-subtle rounded-xl px-3 text-sm">
+                  </div>
+                  <div>
+                    <label class="block font-label-caption text-text-muted mb-1">Inter-Panel Gap</label>
+                    <input type="text" value="20 mm" class="w-full h-11 bg-surface-white border border-border-subtle rounded-xl px-3 text-sm">
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Thermal Hotspot Threshold</label>
+                  <input type="text" value="Baseline + 10.0°C" class="w-full h-11 bg-surface-white border border-border-subtle rounded-xl px-3 text-sm font-semibold text-status-error">
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-2 mt-6">
+              <button onclick="navigateTo('SCR-18')" class="w-1/3 h-12 bg-surface-white border border-border-subtle text-on-surface font-medium rounded-xl">Back</button>
+              <button onclick="navigateTo('SCR-20')" class="w-2/3 h-12 bg-primary-container text-white font-medium rounded-xl flex items-center justify-center gap-1 active:scale-[0.98]">
+                Review & Save <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-20: Installation Wizard Step 5 — Review & Save
+      // -------------------------------------------------------------
+      "SCR-20": {
+        hideBottomNav: true,
+        title: "Wizard: Step 5 / 5",
+        render: () => `
+          <div class="p-margin flex flex-col min-h-[640px] justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-primary-container">Step 5 of 5</span>
+                  <h2 class="font-headline-md text-headline-md text-on-surface">Confirm Hardware</h2>
+                </div>
+                <button onclick="navigateTo('SCR-09')" class="text-text-muted"><span class="material-symbols-outlined">close</span></button>
+              </div>
+
+              <!-- Summary with Sensor vs Manual Source Tags -->
+              <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle space-y-2.5 text-xs">
+                <div class="flex justify-between items-center py-1 border-b border-border-subtle">
+                  <span class="text-text-muted">MAC Address</span>
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-mono font-semibold">00:1B:44:11:3A:C9</span>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-sky-100 text-primary-container font-bold">SENSOR</span>
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-center py-1 border-b border-border-subtle">
+                  <span class="text-text-muted">GPS Position</span>
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-mono font-semibold">-23.8634°, -69.1388°</span>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-sky-100 text-primary-container font-bold">SENSOR</span>
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-center py-1 border-b border-border-subtle">
+                  <span class="text-text-muted">Azimuth / Tilt</span>
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-semibold">180° S / 22.5°</span>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-sky-100 text-primary-container font-bold">SENSOR</span>
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-center py-1">
+                  <span class="text-text-muted">Dimensions & Gap</span>
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-semibold">1950x992mm (20mm gap)</span>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-bold">MANUAL</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2 mt-6">
+              <button onclick="alert('Module PV-006 successfully initialized and connected to telemetry grid!'); navigateTo('SCR-09');" class="w-full h-12 bg-primary-container text-white font-medium rounded-xl active:scale-[0.98]">
+                Commit & Register Module
+              </button>
+              <button onclick="navigateTo('SCR-19')" class="w-full h-12 bg-transparent text-text-muted font-medium rounded-xl">
+                Back to Edit
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-21: Alerts Feed
+      // -------------------------------------------------------------
+      "SCR-21": {
+        hideBottomNav: false,
+        activeTab: "Alerts",
+        title: "Alerts Feed",
+        render: () => `
+          <div class="p-margin space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="font-headline-md text-headline-md text-on-surface">Active Field Alerts</h2>
+                <p class="font-body-sm text-text-muted">2 Requiring Technician Attention</p>
+              </div>
+              <button onclick="navigateTo('SCR-22')" class="text-xs text-primary-container font-semibold hover:underline">
+                Manager Triage &rarr;
+              </button>
+            </div>
+
+            <div class="space-y-3">
+              <!-- Urgent Hotspot -->
+              <div onclick="navigateTo('SCR-30')" class="bg-surface-white p-4 rounded-2xl border border-border-subtle border-l-4 border-l-status-error cursor-pointer active:scale-[0.99] transition-all">
+                <div class="flex justify-between items-start">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-status-error fill-icon">error</span>
+                    <h3 class="font-body-lg text-on-surface font-bold">Hotspot Unresolved: PV-001</h3>
+                  </div>
+                  <span class="text-[10px] text-text-muted font-mono">10m ago</span>
+                </div>
+                <p class="text-xs text-text-muted mt-1.5">
+                  Critical cell hotspot detected at coordinate X=12cm. Maximum observed 57.8°C vs baseline 42.5°C. Autonomous wash cycle queued.
+                </p>
+                <div class="mt-3 pt-2.5 border-t border-border-subtle flex justify-between items-center text-xs">
+                  <span class="font-bold text-status-error">Severity: Critical (Delta +15.3°C)</span>
+                  <span class="text-primary-container font-semibold">View Details &rarr;</span>
+                </div>
+              </div>
+
+              <!-- Reservoir Low Alert -->
+              <div onclick="navigateTo('SCR-29')" class="bg-surface-white p-4 rounded-2xl border border-border-subtle border-l-4 border-l-status-warning cursor-pointer active:scale-[0.99] transition-all">
+                <div class="flex justify-between items-start">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-status-warning">opacity</span>
+                    <h3 class="font-body-lg text-on-surface font-bold">Reservoir Low: PV-004</h3>
+                  </div>
+                  <span class="text-[10px] text-text-muted font-mono">1h ago</span>
+                </div>
+                <p class="text-xs text-text-muted mt-1.5">
+                  Binary reservoir level sensor tripped: Water tank below reserve minimum. Autonomous wash actuator is blocked until manual refill.
+                </p>
+                <div class="mt-3 pt-2.5 border-t border-border-subtle flex justify-between items-center text-xs">
+                  <span class="font-bold text-status-warning">Action: Refill Required</span>
+                  <span class="text-primary-container font-semibold">View Banner &rarr;</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-22: Manager Pending Actions
+      // -------------------------------------------------------------
+      "SCR-22": {
+        hideBottomNav: false,
+        activeTab: "Alerts",
+        title: "Pending Actions",
+        render: () => `
+          <div class="p-margin space-y-4">
+            <div>
+              <h2 class="font-headline-md text-headline-md text-on-surface">Manager Action Triage</h2>
+              <p class="font-body-sm text-text-muted">Consolidated triage cards for open anomalies</p>
+            </div>
+
+            <div class="space-y-3">
+              <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle border-l-4 border-l-status-error">
+                <div class="font-bold text-sm text-on-surface mb-1">Issue #104 — PV-001 Hotspot</div>
+                <div class="text-xs text-text-muted mb-3">Cleaning scheduled for 11:15 AM. Assigning secondary visual inspection to technician.</div>
+                <div class="flex gap-2">
+                  <button onclick="navigateTo('SCR-30')" class="flex-1 h-9 bg-primary-container text-white text-xs font-semibold rounded-lg">View Telemetry</button>
+                  <button onclick="alert('Assigned to Carlos Silva');" class="flex-1 h-9 bg-surface-white border border-border-subtle text-xs font-semibold rounded-lg">Assign Tech</button>
+                </div>
+              </div>
+
+              <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle border-l-4 border-l-status-warning">
+                <div class="font-bold text-sm text-on-surface mb-1">Issue #105 — PV-004 Tank Depleted</div>
+                <div class="text-xs text-text-muted mb-3">Reservoir sensor signal active. Cleaning commands locked to protect water pumps.</div>
+                <div class="flex gap-2">
+                  <button onclick="navigateTo('SCR-29')" class="flex-1 h-9 bg-primary-container text-white text-xs font-semibold rounded-lg">View Warning</button>
+                  <button onclick="alert('Maintenance ticket dispatched to field contractor');" class="flex-1 h-9 bg-surface-white border border-border-subtle text-xs font-semibold rounded-lg">Dispatch Refill</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-23: Settings — Profile
+      // -------------------------------------------------------------
+      "SCR-23": {
+        hideBottomNav: false,
+        activeTab: "Settings",
+        title: "Settings & Profile",
+        render: () => `
+          <div class="p-margin space-y-4">
+            <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle flex items-center gap-3">
+              <div class="w-14 h-14 rounded-full bg-primary-container text-white flex items-center justify-center font-bold text-xl">
+                AM
+              </div>
+              <div>
+                <h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Alex Martinez</h2>
+                <p class="text-xs text-text-muted">alex.martinez@soltech.io</p>
+                <span class="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-primary-container border border-sky-200">
+                  Manager Role
+                </span>
+              </div>
+            </div>
+
+            <!-- Settings Menu Items -->
+            <div class="bg-surface-white rounded-2xl border border-border-subtle divide-y divide-border-subtle overflow-hidden text-sm">
+              <button onclick="navigateTo('SCR-24')" class="w-full p-4 flex items-center justify-between text-left hover:bg-canvas-bg transition-colors">
+                <div class="flex items-center gap-2.5">
+                  <span class="material-symbols-outlined text-primary-container">shield_person</span>
+                  <span class="font-medium text-on-surface">Company Administration</span>
+                </div>
+                <span class="material-symbols-outlined text-text-muted text-base">chevron_right</span>
+              </button>
+
+              <button onclick="navigateTo('SCR-28')" class="w-full p-4 flex items-center justify-between text-left hover:bg-canvas-bg transition-colors">
+                <div class="flex items-center gap-2.5">
+                  <span class="material-symbols-outlined text-primary-container">mail</span>
+                  <span class="font-medium text-on-surface">Email Notification Preferences</span>
+                </div>
+                <span class="material-symbols-outlined text-text-muted text-base">chevron_right</span>
+              </button>
+
+              <button onclick="navigateTo('SCR-03')" class="w-full p-4 flex items-center justify-between text-left hover:bg-canvas-bg transition-colors">
+                <div class="flex items-center gap-2.5">
+                  <span class="material-symbols-outlined text-primary-container">lock</span>
+                  <span class="font-medium text-on-surface">Security & Password</span>
+                </div>
+                <span class="material-symbols-outlined text-text-muted text-base">chevron_right</span>
+              </button>
+            </div>
+
+            <button onclick="navigateTo('SCR-02')" class="w-full h-12 bg-surface-white border border-status-error text-status-error font-medium rounded-xl active:scale-[0.98] transition-transform">
+              Sign Out
+            </button>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-24: Settings — Administration
+      // -------------------------------------------------------------
+      "SCR-24": {
+        hideBottomNav: false,
+        activeTab: "Settings",
+        title: "Administration",
+        render: () => `
+          <div class="p-margin space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="font-headline-md text-headline-md text-on-surface">Administration</h2>
+                <p class="font-body-sm text-text-muted">User, Client & Access Management</p>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <div onclick="navigateTo('SCR-25')" class="bg-surface-white p-4 rounded-2xl border border-border-subtle cursor-pointer hover:border-primary-container">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-sky-50 text-primary-container flex items-center justify-center">
+                      <span class="material-symbols-outlined">group_add</span>
+                    </div>
+                    <div>
+                      <div class="font-bold text-sm text-on-surface">Manage Team Users</div>
+                      <div class="text-xs text-text-muted">Managers & Field Technicians</div>
+                    </div>
+                  </div>
+                  <span class="material-symbols-outlined text-text-muted">chevron_right</span>
+                </div>
+              </div>
+
+              <div onclick="navigateTo('SCR-26')" class="bg-surface-white p-4 rounded-2xl border border-border-subtle cursor-pointer hover:border-primary-container">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-sky-50 text-primary-container flex items-center justify-center">
+                      <span class="material-symbols-outlined">badge</span>
+                    </div>
+                    <div>
+                      <div class="font-bold text-sm text-on-surface">Manage Clients</div>
+                      <div class="text-xs text-text-muted">Assign Read-only Array Portals</div>
+                    </div>
+                  </div>
+                  <span class="material-symbols-outlined text-text-muted">chevron_right</span>
+                </div>
+              </div>
+
+              <div onclick="navigateTo('SCR-27')" class="bg-surface-white p-4 rounded-2xl border border-border-subtle cursor-pointer hover:border-primary-container">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-sky-50 text-primary-container flex items-center justify-center">
+                      <span class="material-symbols-outlined">key</span>
+                    </div>
+                    <div>
+                      <div class="font-bold text-sm text-on-surface">Password Invalidation Hub</div>
+                      <div class="text-xs text-text-muted">Emergency Reset for Field Crew</div>
+                    </div>
+                  </div>
+                  <span class="material-symbols-outlined text-text-muted">chevron_right</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-25: Create/Edit User Modal
+      // -------------------------------------------------------------
+      "SCR-25": {
+        hideBottomNav: true,
+        title: "Create/Edit User",
+        render: () => `
+          <div class="p-margin flex flex-col min-h-[640px] justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
+                <h2 class="font-headline-md text-headline-md text-on-surface">Add Team User</h2>
+                <button onclick="navigateTo('SCR-24')" class="text-text-muted"><span class="material-symbols-outlined">close</span></button>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Full Name</label>
+                  <input type="text" placeholder="e.g. Mateo Morales" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                </div>
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Email Address</label>
+                  <input type="email" placeholder="m.morales@soltech.io" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                </div>
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Assigned Role</label>
+                  <select class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                    <option>Technician</option>
+                    <option>Manager</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Temporary Initial Password</label>
+                  <input type="text" readonly value="Field#2026-Tech" class="w-full h-12 bg-canvas-bg border border-border-subtle rounded-xl px-4 text-sm font-mono text-primary font-bold">
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2 mt-6">
+              <button onclick="navigateTo('SCR-24')" class="w-full h-12 bg-primary-container text-white font-medium rounded-xl active:scale-[0.98]">
+                Save & Dispatch Credentials
+              </button>
+              <button onclick="navigateTo('SCR-24')" class="w-full h-12 bg-transparent text-text-muted font-medium rounded-xl">
+                Cancel
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-26: Create/Edit Client Modal
+      // -------------------------------------------------------------
+      "SCR-26": {
+        hideBottomNav: true,
+        title: "Create/Edit Client",
+        render: () => `
+          <div class="p-margin flex flex-col min-h-[640px] justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
+                <h2 class="font-headline-md text-headline-md text-on-surface">Provision Client Portal</h2>
+                <button onclick="navigateTo('SCR-24')" class="text-text-muted"><span class="material-symbols-outlined">close</span></button>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Client Organization / Sponsor</label>
+                  <input type="text" value="Pacific Andes Mining Corp" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm">
+                </div>
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Client Contact Email</label>
+                  <input type="email" value="renewables@pacificandes.com" class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm">
+                </div>
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Authorized Solar Arrays</label>
+                  <div class="p-3 bg-surface-white rounded-xl border border-border-subtle space-y-2 text-xs">
+                    <label class="flex items-center gap-2">
+                      <input type="checkbox" checked class="rounded border-border-subtle text-primary-container">
+                      Array 1 (PV-001, PV-002)
+                    </label>
+                    <label class="flex items-center gap-2">
+                      <input type="checkbox" checked class="rounded border-border-subtle text-primary-container">
+                      Array 2 (PV-003, PV-004)
+                    </label>
+                    <label class="flex items-center gap-2">
+                      <input type="checkbox" class="rounded border-border-subtle text-primary-container">
+                      Array 3 (PV-005)
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2 mt-6">
+              <button onclick="navigateTo('SCR-24')" class="w-full h-12 bg-primary-container text-white font-medium rounded-xl active:scale-[0.98]">
+                Save Client Assignment
+              </button>
+              <button onclick="navigateTo('SCR-24')" class="w-full h-12 bg-transparent text-text-muted font-medium rounded-xl">
+                Cancel
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-27: Reset User Password Modal
+      // -------------------------------------------------------------
+      "SCR-27": {
+        hideBottomNav: true,
+        title: "Reset User Password",
+        render: () => `
+          <div class="p-margin flex flex-col min-h-[640px] justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
+                <h2 class="font-headline-md text-headline-md text-on-surface">Reset Technician Key</h2>
+                <button onclick="navigateTo('SCR-24')" class="text-text-muted"><span class="material-symbols-outlined">close</span></button>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Select User</label>
+                  <select class="w-full h-12 bg-surface-white border border-border-subtle rounded-xl px-4 text-sm focus:border-primary-container focus:ring-0">
+                    <option>Carlos Silva (Lead Tech)</option>
+                    <option>Mateo Morales (Actuator Tech)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-label-caption text-text-muted mb-1">Generated Passcode</label>
+                  <input type="text" readonly value="FieldAuth#9021" class="w-full h-12 bg-canvas-bg border border-border-subtle rounded-xl px-4 text-sm font-mono text-primary font-bold">
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2 mt-6">
+              <button onclick="navigateTo('SCR-24')" class="w-full h-12 bg-primary-container text-white font-medium rounded-xl active:scale-[0.98]">
+                Send Direct Passcode Reset
+              </button>
+              <button onclick="navigateTo('SCR-24')" class="w-full h-12 bg-transparent text-text-muted font-medium rounded-xl">
+                Cancel
+              </button>
+            </div>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-28: Settings — Email Notifications
+      // -------------------------------------------------------------
+      "SCR-28": {
+        hideBottomNav: false,
+        activeTab: "Settings",
+        title: "Notification Preferences",
+        render: () => `
+          <div class="p-margin space-y-4">
+            <div>
+              <h2 class="font-headline-md text-headline-md text-on-surface">Notification Alerts</h2>
+              <p class="font-body-sm text-text-muted">Per-Module Field Email Dispatch</p>
+            </div>
+
+            <div class="space-y-3">
+              <div class="bg-surface-white p-4 rounded-xl border border-border-subtle flex justify-between items-center text-xs">
+                <div>
+                  <div class="font-bold text-on-surface">Critical Thermal Hotspots</div>
+                  <div class="text-text-muted">Dispatch email immediately when Delta T > 10°C</div>
+                </div>
+                <input type="checkbox" checked class="rounded border-border-subtle text-primary-container h-5 w-5">
+              </div>
+
+              <div class="bg-surface-white p-4 rounded-xl border border-border-subtle flex justify-between items-center text-xs">
+                <div>
+                  <div class="font-bold text-on-surface">Reservoir Low Warnings</div>
+                  <div class="text-text-muted">Send notice when tank float switch triggers LOW</div>
+                </div>
+                <input type="checkbox" checked class="rounded border-border-subtle text-primary-container h-5 w-5">
+              </div>
+
+              <div class="bg-surface-white p-4 rounded-xl border border-border-subtle flex justify-between items-center text-xs">
+                <div>
+                  <div class="font-bold text-on-surface">Cleaning Completion Reports</div>
+                  <div class="text-text-muted">Send automated wash verification summary</div>
+                </div>
+                <input type="checkbox" class="rounded border-border-subtle text-primary-container h-5 w-5">
+              </div>
+            </div>
+
+            <button onclick="alert('Notification preferences updated!'); historyBack();" class="w-full h-12 bg-primary-container text-white font-medium rounded-xl active:scale-[0.98]">
+              Save Preferences
+            </button>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-29: Reservoir Depleted / Cleaning Blocked Banners
+      // -------------------------------------------------------------
+      "SCR-29": {
+        hideBottomNav: false,
+        activeTab: "Modules",
+        title: "Module PV-004 Alert",
+        render: () => `
+          <div class="p-margin space-y-4">
+            <!-- Asymmetrical Alert Card (4px border-l-status-warning) -->
+            <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle border-l-4 border-l-status-warning">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="material-symbols-outlined text-status-warning text-xl">warning</span>
+                <h2 class="font-headline-sm text-sm font-bold text-status-warning">RESERVOIR DEPLETED — CLEANING LOCKED</h2>
+              </div>
+              <p class="text-xs text-text-muted leading-relaxed">
+                Float sensor detects empty fluid reserve tank for Actuator B2. Autonomous spray cleanings are suspended to prevent pump cavitations.
+              </p>
+            </div>
+
+            <!-- Read-only Autonomous Status Block -->
+            <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-on-surface">Actuator Operational State</span>
+                <span class="text-xs font-bold text-status-warning">SUSPENDED</span>
+              </div>
+              <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900">
+                Autonomous cycles scheduled for this module will not trigger until water level sensor detects tank refill.
+              </div>
+            </div>
+
+            <!-- Hardware Spec Card -->
+            <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle space-y-2 text-xs">
+              <div class="flex justify-between py-1 border-b border-border-subtle">
+                <span class="text-text-muted">Module ID</span>
+                <span class="font-bold">PV-004 (Array 2)</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-border-subtle">
+                <span class="text-text-muted">Binary Tank Sensor</span>
+                <span class="font-bold text-status-warning">LOW / DEPLETED</span>
+              </div>
+              <div class="flex justify-between py-1">
+                <span class="text-text-muted">Tank Fluid Type</span>
+                <span class="font-bold">Deionized PV Surfactant</span>
+              </div>
+            </div>
+
+            <button onclick="navigateTo('SCR-09')" class="w-full h-12 bg-primary-container text-white font-medium rounded-xl active:scale-[0.98]">
+              Return to Modules Hub
+            </button>
+          </div>
+        `
+      },
+
+      // -------------------------------------------------------------
+      // SCR-30: PV-001 Hotspot Measurement Details
+      // -------------------------------------------------------------
+      "SCR-30": {
+        hideBottomNav: false,
+        activeTab: "Modules",
+        title: "Hotspot Measurement",
+        render: () => `
+          <div class="p-margin space-y-4">
+            <!-- Header Meta -->
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-status-error">Hotspot Measurement</span>
+                <h2 class="font-headline-md text-headline-md text-on-surface">Module PV-001</h2>
+                <div class="text-[11px] text-text-muted font-mono">Oct 22, 2026, 11:10 AM GMT-3</div>
+              </div>
+              <span class="h-6 px-2 text-xs flex items-center font-bold rounded bg-red-100 text-status-error border border-red-300">
+                CRITICAL
+              </span>
+            </div>
+
+            <!-- Prominent Hotspot Confirmed Error Card (#C62828 border) -->
+            <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle border-l-4 border-l-status-error">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="material-symbols-outlined text-status-error text-xl fill-icon">error</span>
+                <h3 class="font-headline-sm text-sm font-bold text-status-error">HOTSPOT CONFIRMED</h3>
+              </div>
+              <p class="text-xs text-text-muted">
+                Thermal Delta (+15.3°C) exceeds safety limit (+10.0°C). Risk of cell degradation & bypass diode burn-through.
+              </p>
+            </div>
+
+            <!-- 2D Radiometric Thermal Map Viewport (Hotspot at X=12cm, Y=8cm) -->
+            <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-on-surface">2D Thermal Field (32×24 Matrix)</span>
+                <span class="text-[11px] font-mono text-status-error font-bold">T_max: 57.8°C</span>
+              </div>
+
+              <!-- Thermal Canvas with Hotspot Target Marker -->
+              <div class="w-full h-40 rounded-xl border border-border-subtle relative overflow-hidden bg-gradient-to-r from-blue-700 via-sky-500 to-yellow-300 p-2">
+                <!-- Interpolated Hotspot Radial Gradient Spot at X=12cm, Y=8cm -->
+                <div class="absolute left-[30%] top-[35%] w-16 h-16 rounded-full bg-radial from-red-600 via-orange-500 to-transparent flex items-center justify-center animate-pulse">
+                  <div class="w-6 h-6 border-2 border-white rounded-full flex items-center justify-center">
+                    <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+                  </div>
+                </div>
+                <!-- Hotspot Tooltip -->
+                <div class="absolute left-[38%] top-[20%] bg-slate-900/90 text-white text-[10px] px-2 py-0.5 rounded border border-slate-700 font-mono">
+                  X:12cm Y:8cm (57.8°C)
+                </div>
+
+                <div class="text-[10px] text-white/90 font-mono">FOV: 110° • Emissivity: 0.95</div>
+                <div class="absolute bottom-2 left-2 text-[10px] text-white/90 font-mono">T_baseline: 42.5°C</div>
+              </div>
+
+              <!-- Thermal Ramp Colorbar Scale -->
+              <div class="mt-2.5 flex items-center justify-between text-[10px] font-mono text-text-muted">
+                <span>35.0°C</span>
+                <div class="flex-1 mx-2 h-2 rounded bg-gradient-to-r from-blue-700 via-cyan-400 via-yellow-400 via-orange-500 to-red-600"></div>
+                <span class="text-status-error font-bold">60.0°C</span>
+              </div>
+            </div>
+
+            <!-- High-Precision Telemetry Grid -->
+            <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle">
+              <span class="text-xs font-bold text-on-surface block mb-3">Diagnostic Telemetry Readouts</span>
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <div class="p-2.5 bg-canvas-bg rounded-xl border border-border-subtle">
+                  <span class="text-[10px] text-text-muted block">Baseline Temp</span>
+                  <span class="font-mono font-bold text-on-surface">42.5°C</span>
+                </div>
+                <div class="p-2.5 bg-canvas-bg rounded-xl border border-border-subtle">
+                  <span class="text-[10px] text-text-muted block">Hotspot Temp</span>
+                  <span class="font-mono font-bold text-status-error">57.8°C</span>
+                </div>
+                <div class="p-2.5 bg-canvas-bg rounded-xl border border-border-subtle">
+                  <span class="text-[10px] text-text-muted block">Observed Delta T</span>
+                  <span class="font-mono font-bold text-status-error">+15.3°C</span>
+                </div>
+                <div class="p-2.5 bg-canvas-bg rounded-xl border border-border-subtle">
+                  <span class="text-[10px] text-text-muted block">Alert Threshold</span>
+                  <span class="font-mono font-bold text-on-surface">Base + 10°C</span>
+                </div>
+                <div class="p-2.5 bg-canvas-bg rounded-xl border border-border-subtle">
+                  <span class="text-[10px] text-text-muted block">Hotspot Coordinate</span>
+                  <span class="font-mono font-bold text-primary-container">X = 12 cm</span>
+                </div>
+                <div class="p-2.5 bg-canvas-bg rounded-xl border border-border-subtle">
+                  <span class="text-[10px] text-text-muted block">Reservoir Status</span>
+                  <span class="font-bold text-status-success flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs fill-icon">water_drop</span> OK
+                  </span>
+                </div>
+                <div class="p-2.5 bg-canvas-bg rounded-xl border border-border-subtle">
+                  <span class="text-[10px] text-text-muted block">Operating Voltage</span>
+                  <span class="font-mono font-bold text-on-surface">18.2 V</span>
+                </div>
+                <div class="p-2.5 bg-canvas-bg rounded-xl border border-border-subtle">
+                  <span class="text-[10px] text-text-muted block">String Power</span>
+                  <span class="font-mono font-bold text-on-surface">74.6 W</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- READ-ONLY AUTOMATIC CLEANING CARD (With Selectable Lifecycle States) -->
+            <div class="bg-surface-white p-4 rounded-2xl border border-border-subtle">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-primary-container text-base">water_drop</span>
+                  <h3 class="font-body-md font-bold text-on-surface">Automatic Cleaning Status</h3>
+                </div>
+                <!-- Interactive Lifecycle Simulator Switcher -->
+                <select id="cleaningStateSelect" onchange="updateCleaningState(this.value)" class="text-[11px] bg-canvas-bg border border-border-subtle rounded px-2 py-1 font-semibold text-primary-container">
+                  <option value="Scheduled">State: Scheduled</option>
+                  <option value="Awaiting scheduling">State: Awaiting scheduling</option>
+                  <option value="Cleaning in progress">State: Cleaning in progress</option>
+                  <option value="Awaiting verification">State: Awaiting verification</option>
+                  <option value="Resolved">State: Resolved</option>
+                  <option value="Unresolved">State: Unresolved</option>
+                </select>
+              </div>
+
+              <!-- Dynamic State Display Box -->
+              <div id="cleaningStateBox" class="p-3 bg-canvas-bg rounded-xl border border-border-subtle text-xs">
+                <div class="flex items-center gap-1.5 font-bold text-primary-container mb-1">
+                  <span class="material-symbols-outlined text-sm">schedule</span>
+                  Scheduled: Oct 22, 11:15 AM GMT-3
+                </div>
+                <div class="text-text-muted leading-relaxed">
+                  Target Actuator Position: <strong>X = 12.0 cm</strong>. The autonomous wash cycle is locked in the scheduling queue. Strictly read-only actuator automation.
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      }
+    };
+
+    // Navigation Handler
+    function navigateTo(screenId) {
+      if (!screens[screenId]) return;
+      
+      if (currentScreen !== screenId) {
+        navHistory.push(currentScreen);
+      }
+      currentScreen = screenId;
+      
+      // Update Jump Selector Dropdown
+      const selector = document.getElementById("screenSelector");
+      if (selector) selector.value = screenId;
+
+      // Render Screen Content
+      const viewport = document.getElementById("canvasViewport");
+      const screenObj = screens[screenId];
+      viewport.innerHTML = screenObj.render();
+      viewport.scrollTop = 0;
+
+      // Handle Bottom Navigation Bar visibility
+      const bottomNav = document.getElementById("bottomNavBar");
+      if (screenObj.hideBottomNav || currentRole === "Admin") {
+        bottomNav.classList.add("hidden");
+        viewport.classList.remove("pb-20");
+        viewport.classList.add("pb-6");
+      } else {
+        bottomNav.classList.remove("hidden");
+        viewport.classList.remove("pb-6");
+        viewport.classList.add("pb-20");
+        updateBottomNavTabs(screenObj.activeTab);
+      }
+
+      // Handle Top Bar Title / Brand
+      const brandLogo = document.getElementById("topBarBrandLogo");
+      if (screenObj.title && screenId !== "SCR-01") {
+        brandLogo.innerText = screenObj.title;
+      } else {
+        brandLogo.innerText = "ThermoScan";
+      }
+
+      // Hide or show back button on root screens
+      const backBtn = document.getElementById("topBarBackBtn");
+      if (screenId === "SCR-09" || screenId === "SCR-01" || screenId === "SCR-04") {
+        backBtn.classList.add("opacity-30", "pointer-events-none");
+      } else {
+        backBtn.classList.remove("opacity-30", "pointer-events-none");
+      }
+    }
+
+    // Role Switcher
+    function setRole(newRole) {
+      currentRole = newRole;
+      const roleBadge = document.getElementById("roleBadge");
+      roleBadge.innerText = newRole;
+
+      if (newRole === "Admin") {
+        roleBadge.className = "h-6 px-2 text-xs flex items-center font-semibold rounded bg-purple-100 text-purple-900 border border-purple-300";
+        navigateTo("SCR-04");
+      } else if (newRole === "Client") {
+        roleBadge.className = "h-6 px-2 text-xs flex items-center font-semibold rounded bg-amber-100 text-amber-900 border border-amber-300";
+        navigateTo("SCR-09");
+      } else if (newRole === "Technician") {
+        roleBadge.className = "h-6 px-2 text-xs flex items-center font-semibold rounded bg-teal-100 text-teal-900 border border-teal-300";
+        navigateTo("SCR-09");
+      } else {
+        roleBadge.className = "h-6 px-2 text-xs flex items-center font-semibold rounded bg-sky-100 text-primary border border-sky-300";
+        navigateTo("SCR-09");
+      }
+    }
+
+    // Tab Highlight Tracker
+    function updateBottomNavTabs(activeTab) {
+      const tabs = {
+        "Modules": document.getElementById("navModulesBtn"),
+        "Alerts": document.getElementById("navAlertsBtn"),
+        "Settings": document.getElementById("navSettingsBtn")
+      };
+
+      for (const [key, element] of Object.entries(tabs)) {
+        if (!element) continue;
+        if (key === activeTab) {
+          element.className = "flex flex-col items-center justify-center flex-1 h-full text-primary font-bold transition-all";
+        } else {
+          element.className = "flex flex-col items-center justify-center flex-1 h-full text-text-muted transition-all";
+        }
+      }
+    }
+
+    // Back Navigation
+    function historyBack() {
+      if (navHistory.length > 0) {
+        const prev = navHistory.pop();
+        navigateTo(prev);
+      } else {
+        navigateTo("SCR-09");
+      }
+    }
+
+    // Interactive Lifecycle State Switcher for SCR-30
+    function updateCleaningState(state) {
+      const box = document.getElementById("cleaningStateBox");
+      if (!box) return;
+
+      const stateConfigs = {
+        "Scheduled": {
+          icon: "schedule",
+          color: "text-primary-container",
+          title: "Scheduled: Oct 22, 11:15 AM GMT-3",
+          desc: "Target Actuator Position: X = 12.0 cm. Read-only autonomous schedule in effect."
+        },
+        "Awaiting scheduling": {
+          icon: "hourglass_top",
+          color: "text-status-warning",
+          title: "Awaiting Scheduling (Queue Slot 3)",
+          desc: "Telemetry anomaly acknowledged. Array inverter current balancing in progress before wash sequence initiation."
+        },
+        "Cleaning in progress": {
+          icon: "sync",
+          color: "text-sky-600 animate-spin",
+          title: "Cleaning in progress (Actuator Active)",
+          desc: "Sprayer traverse deployed to X=12.0cm. Pulsed deionized water spray active at 2.4 bar pressure."
+        },
+        "Awaiting verification": {
+          icon: "hourglass_bottom",
+          color: "text-status-warning",
+          title: "Awaiting Verification (30-Minute Rule)",
+          desc: "Actuator wash cycle finished. Thermal relaxation window active. Re-scanning radiometric matrix at 11:45 AM."
+        },
+        "Resolved": {
+          icon: "check_circle",
+          color: "text-status-success",
+          title: "Verified Resolved (-14.2°C Delta Dissipated)",
+          desc: "Follow-up scan confirms cell temperature normalized to 43.6°C (within baseline limits). Actuator parked at Home."
+        },
+        "Unresolved": {
+          icon: "error",
+          color: "text-status-error",
+          title: "Unresolved: Thermal Anomaly Persists",
+          desc: "Wash cycle failed to dissipate hotspot (Delta +14.8°C remains). Dispatched technician inspection ticket."
+        }
+      };
+
+      const c = stateConfigs[state] || stateConfigs["Scheduled"];
+      box.innerHTML = `
+        <div class="flex items-center gap-1.5 font-bold ${c.color} mb-1">
+          <span class="material-symbols-outlined text-sm">${c.icon}</span>
+          ${c.title}
+        </div>
+        <div class="text-text-muted leading-relaxed">${c.desc}</div>
+      `;
+    }
+
+    // Initialize to SCR-09 on load
+    window.addEventListener("DOMContentLoaded", () => {
+      navigateTo("SCR-09");
+    });
+  </script>
+
+
+</body></html>
