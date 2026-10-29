@@ -45,7 +45,14 @@ class ThermoScanAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ? Row(
                     children: [
                       IconButton(
-                        onPressed: onBack ?? () => context.pop(),
+                        onPressed: onBack ??
+                            () {
+                              if (context.canPop()) {
+                                context.pop();
+                              } else {
+                                context.go('/home');
+                              }
+                            },
                         icon: const Icon(
                           Icons.arrow_back,
                           color: AppColors.primary,

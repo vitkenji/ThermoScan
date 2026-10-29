@@ -79,6 +79,13 @@ class _ModuleOverviewScreenState extends ConsumerState<ModuleOverviewScreen> {
         title: 'Module Overview',
         role: user?.role ?? 'technician',
         showBack: true,
+        onBack: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go((user?.isManager ?? false) ? '/modules' : '/home');
+          }
+        },
       ),
       body: SafeArea(
         child: detailsAsync.when(
@@ -234,6 +241,12 @@ class _ModuleOverviewScreenState extends ConsumerState<ModuleOverviewScreen> {
                             isMono: true,
                           ),
                           const SizedBox(height: 10),
+                          const _MetadataRow(
+                            icon: Icons.wifi_off_outlined,
+                            label: 'Device Status',
+                            value: 'Offline (Awaiting ESP32 connection)',
+                          ),
+                          const SizedBox(height: 10),
                           _MetadataRow(
                             icon: Icons.engineering_outlined,
                             label: 'Installer',
@@ -251,6 +264,33 @@ class _ModuleOverviewScreenState extends ConsumerState<ModuleOverviewScreen> {
                             label: 'Configured',
                             value: _formatDate(mod.configuredAt),
                             isMono: mod.configuredAt != null,
+                          ),
+                          const SizedBox(height: 14),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(
+                                  Icons.sensors_off_outlined,
+                                  size: 18,
+                                  color: AppColors.textSecondary,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    'Embedded Device Offline — This module will only transition to Online once the physical ESP32 unit connects to the cloud and syncs its configuration.',
+                                    style: AppTypography.caption,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),

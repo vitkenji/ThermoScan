@@ -132,7 +132,7 @@ class _ModulesHomeScreenState extends ConsumerState<ModulesHomeScreen> {
                             ),
                             const SizedBox(width: 8),
                             _FilterChipButton(
-                              label: 'Active',
+                              label: 'Configured',
                               selected: _statusFilter == 'active',
                               onTap: () =>
                                   setState(() => _statusFilter = 'active'),
@@ -351,6 +351,7 @@ class _ModuleListCard extends StatelessWidget {
                 runSpacing: 8,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
+                  const _OfflineDevicePill(),
                   _RelationshipBadge(label: module.relationshipLabel),
                   if (module.panelCount != null &&
                       module.panelLengthCm != null &&
@@ -430,10 +431,10 @@ class ModuleMonitoringStatusBadge extends StatelessWidget {
 
     switch (status) {
       case 'active':
-        bg = AppColors.successBackground;
-        border = AppColors.successBorder;
-        text = AppColors.success;
-        label = 'Active';
+        bg = AppColors.primarySoft.withValues(alpha: 0.45);
+        border = AppColors.border;
+        text = AppColors.primary;
+        label = 'Configured';
         break;
       case 'pending_configuration':
         bg = AppColors.warningBackground;
@@ -477,6 +478,41 @@ class ModuleMonitoringStatusBadge extends StatelessWidget {
           Text(
             label,
             style: AppTypography.chip.copyWith(color: text),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OfflineDevicePill extends StatelessWidget {
+  const _OfflineDevicePill();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.wifi_off_outlined,
+            size: 12,
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            'ESP32 Offline',
+            style: AppTypography.caption.copyWith(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
           ),
         ],
       ),

@@ -177,7 +177,7 @@ class _ModuleInstallationWizardScreenState
           backgroundColor: AppColors.success,
         ),
       );
-      context.go('/modules/${_persistedModuleId!}');
+      context.pushReplacement('/modules/${_persistedModuleId!}');
     } catch (err) {
       if (!mounted) return;
       setState(() => _errorMsg = err.toString());
@@ -319,13 +319,13 @@ class _ModuleInstallationWizardScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Module configuration saved. The embedded device will apply these properties on its next cloud sync.',
+            'Module configuration saved. The embedded device remains offline until it connects and syncs.',
           ),
           backgroundColor: AppColors.success,
           duration: Duration(seconds: 4),
         ),
       );
-      context.go('/modules/$targetModuleId');
+      context.pushReplacement('/modules/$targetModuleId');
     } catch (err) {
       if (!mounted) return;
       setState(() => _errorMsg = err.toString());

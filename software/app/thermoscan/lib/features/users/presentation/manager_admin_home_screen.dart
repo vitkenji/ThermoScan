@@ -55,7 +55,7 @@ class ManagerAdminHomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 20),
 
-                // Summary Metrics Row
+                // Summary Metrics 2x2 Grid (prevents label wrapping on narrow screens)
                 Row(
                   children: [
                     Expanded(
@@ -72,7 +72,11 @@ class ManagerAdminHomeScreen extends ConsumerWidget {
                         value: usersAsync.isLoading ? '—' : '$managersCount',
                       ),
                     ),
-                    const SizedBox(width: 10),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
                     Expanded(
                       child: _MetricCard(
                         label: 'Technicians',
