@@ -63,6 +63,8 @@ class ApiException implements Exception {
     switch (code) {
       case 'INVALID_CREDENTIALS':
         return 'Invalid email or password.';
+      case 'ACCOUNT_INACTIVE':
+        return 'This account is inactive. Contact your company Manager.';
       case 'INVALID_CURRENT_PASSWORD':
         return 'Current password is incorrect.';
       case 'SAME_PASSWORD':

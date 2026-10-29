@@ -92,7 +92,7 @@ func (s *Service) Login(ctx context.Context, email, password string) (AuthRespon
 	}
 
 	if !u.IsActive || !u.CompanyIsActive {
-		return AuthResponse{}, ErrInvalidCredentials
+		return AuthResponse{}, ErrAccountInactive
 	}
 
 	now := time.Now().UTC()

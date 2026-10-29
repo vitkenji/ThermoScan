@@ -1,17 +1,49 @@
-# thermoscan
+# ThermoScan (`thermoscan`)
 
-A new Flutter project.
+Flutter mobile client for the ThermoScan photovoltaic module monitoring and localized cleaning system.
 
-## Getting Started
+## Architecture & Stack
 
-This project is a starting point for a Flutter application.
+- **State Management:** `flutter_riverpod`
+- **Routing:** `go_router` with reactive authentication, mandatory password change, and role-based route guards
+- **Networking:** `dio` with automatic JWT Bearer token attachment and transparent `/auth/refresh` token rotation on `401 Unauthorized`
+- **Secure Storage:** `flutter_secure_storage`
+- **Design System:** Custom ThermoScan visual identity (`lib/core/theme/` and `lib/core/widgets/`) using `Chakra Petch`, `IBM Plex Sans`, and `IBM Plex Mono`
 
-A few resources to get you started if this is your first Flutter project:
+## Implemented Modules
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+- **`lib/core/`**: API configuration, Dio client & error handling (`ACCOUNT_INACTIVE`, `PASSWORD_CHANGE_REQUIRED`, etc.), secure token storage, theme tokens, and shared widgets (`ThermoScanLogo`, `AppPrimaryButton`, `AppSecondaryButton`, `AppDestructiveButton`, `AppTextField`, `StatusChip`, `RoleBadge`, `ThermoScanTopBar`, `TemporaryPasswordModal`).
+- **`lib/features/auth/`**:
+  - Splash screen with automatic session restoration (`GET /api/v1/auth/me`)
+  - Login screen with email/password validation and backend error mapping
+  - Mandatory password change screen (`POST /api/v1/auth/change-password`)
+  - Profile screen (`PATCH /api/v1/auth/me`, password update, logout, and read-only **Responsible Managers** card for Technicians)
+  - Role workspace screen for Technician and Client accounts
+- **`lib/features/companies/`** (`system_admin`):
+  - Companies list with search and pull-to-refresh (`GET /api/v1/companies`)
+  - Create Company + initial default Manager flow (`POST /api/v1/companies`)
+  - Company Details & Manager password reset (`GET /api/v1/companies/{id}`, `POST /api/v1/companies/{id}/managers/{userId}/reset-password`)
+- **`lib/features/users/`** (`manager`):
+  - Company Administration home hub
+  - Company Users list with search, role filtering, logged-in user indicator (`You`), status toggle, and password reset (`GET /api/v1/users`, `PATCH /api/v1/users/{id}/status`, `POST /api/v1/users/{id}/reset-password`)
+  - Create User screen supporting `manager`, `technician` (with responsible Manager assignment), and `client` (`POST /api/v1/users`)
+  - Dedicated Clients list and Create Client screen
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Development Commands
+
+```bash
+# Install packages
+flutter pub get
+
+# Run static analyzer
+flutter analyze
+
+# Execute widget tests
+flutter test
+
+# Run on Android Emulator (defaults to http://10.0.2.2:8080/api/v1)
+flutter run
+
+# Run with custom backend URL
+flutter run --dart-define=API_BASE_URL=http://localhost:8080/api/v1
+```

@@ -62,11 +62,14 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.service.Login(r.Context(), req.Email, req.Password)
 	if err != nil {
-		if errors.Is(err, ErrInvalidCredentials) {
+		switch {
+		case errors.Is(err, ErrInvalidCredentials):
 			httpjson.WriteError(w, http.StatusUnauthorized, "invalid email or password", "INVALID_CREDENTIALS")
-			return
+		case errors.Is(err, ErrAccountInactive):
+			httpjson.WriteError(w, http.StatusForbidden, "this account is inactive. Contact your company Manager", "ACCOUNT_INACTIVE")
+		default:
+			httpjson.WriteError(w, http.StatusInternalServerError, "internal server error", "INTERNAL_ERROR")
 		}
-		httpjson.WriteError(w, http.StatusInternalServerError, "internal server error", "INTERNAL_ERROR")
 		return
 	}
 

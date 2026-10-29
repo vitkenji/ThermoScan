@@ -194,4 +194,27 @@ func TestAuthFlowIntegration(t *testing.T) {
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatalf("expected 401 when using access token of a logged-out session, got %d: %s", rec.Code, rec.Body.String())
 	}
+
+	// 10. Deactivated user login with valid password returns 403 ACCOUNT_INACTIVE
+	_, err = q.CreateUser(ctx, db.CreateUserParams{
+		CompanyID:          company.ID,
+		Name:               "Inactive Tech",
+		Email:              "inactive.tech@authtest.local",
+		PasswordHash:       hash,
+		Role:               auth.RoleTechnician,
+		IsActive:           false,
+		IsDefaultManager:   false,
+		MustChangePassword: false,
+	})
+	if err != nil {
+		t.Fatalf("CreateUser (inactive tech) failed: %v", err)
+	}
+
+	rec = doJSON(http.MethodPost, "/api/v1/auth/login", "", map[string]string{
+		"email":    "inactive.tech@authtest.local",
+		"password": tempPass,
+	})
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("expected 403 ACCOUNT_INACTIVE on login for deactivated user, got %d: %s", rec.Code, rec.Body.String())
+	}
 }
