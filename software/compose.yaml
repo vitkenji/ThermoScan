@@ -4,16 +4,16 @@ services:
     container_name: termoscan-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: termoscan
-      POSTGRES_PASSWORD: termoscan
-      POSTGRES_DB: termoscan
+      POSTGRES_USER: ${POSTGRES_USER:-termoscan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-termoscan}
+      POSTGRES_DB: ${POSTGRES_DB:-termoscan}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./backend/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U termoscan -d termoscan"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-termoscan} -d ${POSTGRES_DB:-termoscan}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -24,11 +24,13 @@ services:
     container_name: termoscan-api
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgres://termoscan:termoscan@db:5432/termoscan?sslmode=disable
-      JWT_SECRET: troque-este-segredo
-      API_PORT: "8080"
+      DATABASE_URL: postgres://${POSTGRES_USER:-termoscan}:${POSTGRES_PASSWORD:-termoscan}@db:5432/${POSTGRES_DB:-termoscan}?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET:-troque-este-segredo}
+      API_PORT: ${API_PORT:-8080}
+      BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-System Admin}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
     ports:
-      - "8080:8080"
+      - "${API_PORT:-8080}:${API_PORT:-8080}"
     depends_on:
       db:
         condition: service_healthy

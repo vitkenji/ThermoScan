@@ -113,3 +113,8 @@ WHERE company_id = $1
   AND id = $2
   AND role IN ('technician', 'client')
 RETURNING id, company_id, name, email, role, is_active, is_default_manager, must_change_password, created_at, updated_at;
+
+-- name: CountSystemAdmins :one
+SELECT count(*)
+FROM users
+WHERE role = 'system_admin';
